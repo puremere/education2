@@ -1,0 +1,265 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/images/favicon.ico" type="image/ico" />
+    <title>پرتال مشتریان </title>
+
+
+
+
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.css" rel="stylesheet" />
+    <!-- Custom Theme Style -->
+    <link href="~/Content/custom.css" rel="stylesheet">
+    @*<link href="~/AdminPanel/build/css/bootstrap-rlt.css" rel="stylesheet" />*@
+    <link href="~/Content/toastr.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-colorpicker.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-tagsinput.css" rel="stylesheet" />
+    @*<link href="@BotDetect.Web.CaptchaUrls.Absolute.LayoutStyleSheetUrl"
+        rel="stylesheet" type="text/css" />*@
+    @Styles.Render("~/bundles/Content/css")
+    @RenderSection("HeadIncludes", required: false)
+    @Scripts.Render("~/bundles/modernizr")
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script>
+    <!-- Bootstrap -->
+
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/toastr.js"></script>
+    <script src="~/Scripts/bootstrap-tagsinput.min.js"></script>
+    <script src="~/Scripts/bootstrap-tagsinput-angular.min.js"></script>
+    @RenderSection("scripts", required: false)
+</head>
+<body class="nav-md">
+
+
+
+
+
+    <div class="container body">
+        <div class="main_container" style="direction:rtl">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+
+                        <a href="index.html" class="site_title">
+                            <span>پنل مدیریت اردیبهشت</span>
+
+                        </a>
+
+
+                    </div>
+
+                    <div class="clearfix"></div>
+
+                    <!-- menu profile quick info -->
+                    <div id="profile" class="profile clearfix">
+
+                    </div>
+                    @*<script>
+                            $.ajax({
+                                url: '/Admin/getprofiledata',
+                                dataType: 'html',
+
+                                success: function (data) {
+
+                                    $('#profile').html(data);
+
+                                },
+                                error: function () {
+                                    alert("error")
+                                }
+                            });
+                        </script>*@
+                    <!-- /menu profile quick info -->
+
+                    <br />
+
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        <div class="menu_section">
+
+                            <ul class="nav side-menu" style="padding-right:0px">
+
+
+                                <li>
+                                    <a href="@Url.Action("dashboard", "Admin")"><i class="fa fa-dashboard"></i>داشبورد </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("product", "Admin")"><i class="fa fa-edit"></i> پروفایل </a>
+                                </li>
+
+
+
+                            </ul>
+                        </div>
+
+                    </div>
+                    <!-- /sidebar menu -->
+                    <!-- /menu footer buttons -->
+                    @*<div class="sidebar-footer hidden-small">
+                            <a data-toggle="tooltip" data-placement="top" title="Settings">
+                                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="Lock">
+                                <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
+                                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+                            </a>
+                        </div>*@
+                    <!-- /menu footer buttons -->
+                </div>
+            </div>
+
+            <!-- top navigation -->
+            <div class="top_nav">
+
+                <div class="nav_menu" style="direction: ltr; padding: 15px;">
+                    <div class="nav toggle">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>
+                    <div>
+                        <a>
+                            <i class="glyphicon glyphicon-log-out" style="font-size: 22px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div class="right_col" role="main" style="background-color:white">
+                @*top tiles*@
+                @*<div class="row tile_count">
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-user"></i> Total Users</span>
+                            <div class="count">2500</div>
+                            <span class="count_bottom"><i class="green">4% </i> From last Week</span>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-clock-o"></i> Average Time</span>
+                            <div class="count">123.50</div>
+                            <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>3% </i> From last Week</span>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-user"></i> Total Males</span>
+                            <div class="count green">2,500</div>
+                            <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34% </i> From last Week</span>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-user"></i> Total Females</span>
+                            <div class="count">4,567</div>
+                            <span class="count_bottom"><i class="red"><i class="fa fa-sort-desc"></i>12% </i> From last Week</span>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-user"></i> Total Collections</span>
+                            <div class="count">2,315</div>
+                            <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34% </i> From last Week</span>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                            <span class="count_top"><i class="fa fa-user"></i> Total Connections</span>
+                            <div class="count">7,325</div>
+                            <span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34% </i> From last Week</span>
+                        </div>
+                    </div>*@
+                <!-- /top tiles -->
+                @RenderBody()
+
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            @*<footer>
+                    <div>
+                        تمامی حقوق مادی و معنوی این سایت متعلق به سایت  www.supectco.com میباشد
+                    </div>
+                    <div class="clearfix"></div>
+                </footer>*@
+            <!-- /footer content -->
+        </div>
+    </div>
+
+
+    <!-- DateJS -->
+
+    <script src="~/AdminPanel/Scripts/date.js"></script>
+    <!-- Custom Theme Scripts -->
+    <script src="~/AdminPanel/build/js/custom.min.js"></script>
+    <div id="loading" style="display:none">
+        <div style="padding:15px 35px; background-color:white;position:fixed;overflow: visible;margin: auto;top: 0;left: 0; bottom: 0; right: 0;max-height:150px; max-width:250px">
+
+            <img style="max-width:80px; display:block; margin:auto" src="~/images/logo.png" />
+            <img src="~/images/adminloading.gif" style="display:block; margin:auto; margin-top:15px" />
+
+        </div>
+    </div>
+
+    <script>
+        $(document).ajaxStart(function () {
+            $("#loading").css("display", "block");
+        });
+        $(document).ajaxComplete(function () {
+            $("#loading").css("display", "none");
+        });
+
+    </script>
+   
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+@*<body>
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    @Html.ActionLink("Application name", "Index", "Admin", null, new { @class = "navbar-brand" })
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("Admin", "Index", "Admin")</li>
+                        <li>@Html.ActionLink("About", "About", "Admin")</li>
+                        <li>@Html.ActionLink("Contact", "Contact", "Admin")</li>
+                    </ul>
+                    @Html.Partial("_LoginPartial")
+                </div>
+            </div>
+        </div>
+        <div class="container body-content">
+
+            <hr />
+            <footer>
+                <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            </footer>
+        </div>
+
+        @Scripts.Render("~/AdminPanel/bundles/jquery")
+        @Scripts.Render("~/AdminPanel/bundles/bootstrap")
+        @RenderSection("scripts", required: false)
+    </body>*@
+

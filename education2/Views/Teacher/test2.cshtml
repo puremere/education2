@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "WebRTC Video Caller";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>WebRTC Video Caller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Styles -->
+    <link href="/Content/icomoon/style.css" rel="stylesheet" />
+    <link href="/Content/Site.css" rel="stylesheet" />
+    <link href="/Content/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Content/alertify/alertify.core.css" rel="stylesheet" />
+    <link href="/Content/alertify/alertify.default.css" rel="stylesheet" />
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+</head>
+
+<body data-bind="attr: { 'data-mode': Mode }">
+    <!-- Invalid browser alert, and reminder to enable media things -->
+    <div class="container-fluid">
+        <div class="row-fluid instructions">
+            <div class="span12">
+                <div class="alert"><h4>توجه!</h4> مرورگر مجوز وب کم و میکرفون را لازم دارد  <strong>امکانات سایت تنها با ارائه مجوز از طرف شما قابل ارائه می باشد</strong>.</div>
+            </div>
+        </div>
+        <div class="row-fluid browser-warning">
+            <div class="span12">
+                <div class="alert alert-error"><h4>شما باید از آخرین نسخه مرورگر کروم یا فایر فاکس استفاده کنید</h4>  <a href="https://nightly.mozilla.org/">آخرین نسخه فایرفاکس</a>، <a href="https://www.google.com/intl/en/chrome/browser/beta.html">آخرین نسخه کروم</a> </div>
+                <div class="alert alert-error"><h4>شما باید از آخرین نسخه مرورگر کروم یا فایر فاکس استفاده کنید</h4>  <a href="https://nightly.mozilla.org/">آخرین نسخه فایرفاکس</a>، <a href="https://www.google.com/intl/en/chrome/browser/beta.html">آخرین نسخه کروم</a> </div>
+            </div>
+        </div>
+    </div>
+    <!-- Top Bar -->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand pull-left" href="#">mereskype</a>
+                <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
+                <div class="nav-collapse collapse">
+                    <p class="navbar-text pull-right">
+                        نام شما:  <span data-bind="text:  Username"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- App Area -->
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <!-- Side Bar -->
+            <div class="span3">
+                <!-- In Call Actions -->
+                <div class="well actions">
+                    <div class="status" data-bind="text: CallStatus"></div>
+                    <button class="btn btn-danger hangup">قطع</button>
+                </div>
+                <!-- User List -->
+                <div class="well user-list">
+                    <ul class="nav nav-list">
+                        <li class="nav-header">کاربران آنلاین <small data-bind="text: Users().length"></small></li>
+                        <!-- ko foreach: Users -->
+                        <li class="user" data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }">
+                            <a href="#">
+                                <!-- only using an a here for bootstrap styling -->
+                                <div class="username" data-bind="text: Username"></div>
+                                <div class="helper" data-bind="css: $parent.getUserStatus($data)"></div>
+                            </a>
+                        </li>
+                        <!-- /ko -->
+                    </ul>
+                </div>
+            </div>
+            <!-- Videos -->
+            <div class="span9">
+                <div class="row-fluid">
+                   
+                    <div class="span6">
+                        <h4>شما</h4>
+                        <video id="1" class="video mine cool-background" autoplay="autoplay"></video>
+                    </div>
+                    <div class="span6">
+                        <h4>مخاطب</h4>
+                        <video class="video partner cool-background" autoplay="autoplay"></video>
+                    </div>
+                    <script>
+                        window.onload = function () {
+                            var element = document.getElementById('1');
+                            element.muted = "muted";
+
+                           
+                        }
+
+                    </script>
+
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <hr>
+
+    </div>
+
+    <!-- Libs -->
+    <script src="/Scripts/adapter.js"></script>
+    <script src="/Scripts/jquery-1.7.1.js"></script>
+    <script src="/Scripts/knockout-2.2.1.js"></script>
+    <script src="/Scripts/knockout.mapping-latest.js"></script>
+    <script src="/Scripts/alertify.min.js"></script>
+    <script src="/Content/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    @*<script>
+            $(function () {
+                alert("aaa");
+                var chat = $.connection.chatHub;
+                alert("nnn");
+
+            })
+
+        </script>*@
+    <!-- App JS -->
+
+    <script src="/Scripts/webrtcdemo2/viewModel.js"></script>
+    <script src="/Scripts/webrtcdemo2/connectionManager.js"></script>
+    <script src="/Scripts/webrtcdemo2/app.js"></script>
+   
+
+    <!-- Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-38670464-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+</body>
+</html>
