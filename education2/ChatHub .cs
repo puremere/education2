@@ -31,8 +31,13 @@ namespace education2
         private static readonly List<UserCall> UserCalls = new List<UserCall>();
         private static readonly List<CallOffer> CallOffers = new List<CallOffer>();
 
+        public void Hang(string username)
+        {
+           
+        }
         public void Join(string username)
         {
+           
             // Add the new user
             Users.Add(new User
             {
@@ -138,8 +143,10 @@ namespace education2
             // Create a new call to match these folks up
             UserCalls.Add(new UserCall
             {
-                Users = new List<User> { callingUser, targetUser }
+                
+               Users = new List<User> { callingUser, targetUser },
             });
+            
 
             // Tell the original caller that the call was accepted
             Clients.Client(targetConnectionId).callAccepted(callingUser);
@@ -147,7 +154,7 @@ namespace education2
             // Update the user list, since thes two are now in a call
             SendUserListUpdate();
         }
-
+       
         public void HangUp()
         {
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
@@ -181,13 +188,14 @@ namespace education2
 
             SendUserListUpdate();
         }
-        public void resetAllConnction(int id) {
-            List<string> List = Users.Where(u => u.ConnectionId != Context.ConnectionId).Select(x=>x.ConnectionId).ToList();
+        public void resetAllConnction(string id) {
+            List<string> List = Users.Where(u => u.ConnectionId != Context.ConnectionId && u.ConnectionId != id).Select(x=>x.ConnectionId).ToList();
             foreach(var item in List)
             {
                 CallUser(item);
             }
         }
+        
         // WebRTC Signal Handler
         public void SendSignal(string signal, string targetConnectionId)
         {

@@ -13,6 +13,7 @@ WebRTC API has been normalized using 'adapter.js'
 WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
         _connections = {},
+        _streamIDs = {},
         _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
 
         /* Callbacks */
@@ -64,16 +65,17 @@ WebRtcDemo.ConnectionManager = (function () {
 
             // Stream handlers
             connection.onaddstream = function (event) {
-               
+                _streamIDs[partnerClientId] = event.stream.id;
                 console.log('WebRTC: adding stream');
                 // A stream was added, so surface it up to our UI via callback
-                _onStreamAddedCallback(connection, event);
+                _onStreamAddedCallback(partnerClientId, event);
             };
 
             connection.onremovestream = function (event) {
                 console.log('WebRTC: removing stream');
+                console.log(partnerClientId);
                 // A stream was removed
-                _onStreamRemovedCallback(connection, event.stream.id);
+                _onStreamRemovedCallback(connection, partnerClientId);
             };
 
             // Store away the connection
@@ -148,7 +150,7 @@ WebRtcDemo.ConnectionManager = (function () {
             if (connection) {
                 // Let the user know which streams are leaving
                 // todo: foreach connection.remoteStreams -> onStreamRemoved(stream.id)
-                _onStreamRemovedCallback(null, null);
+                _onStreamRemovedCallback(null, partnerClientId);
 
                 // Close the connection
                 connection.close();
