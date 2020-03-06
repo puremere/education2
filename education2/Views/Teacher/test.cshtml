@@ -74,8 +74,9 @@
                     <ul class="nav nav-list">
                         <li class="nav-header">کاربران آنلاین <small data-bind="text: Users().length"></small></li>
                         <!-- ko foreach: Users -->
-                        <li class="user" data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }">
-                            <a href="#">
+                        <li class="user" >
+                            <i  data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }"  class="btn btn-danger" style="display:inline-block; float:right">قطع</i>
+                            <a  data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }"  href="#" style="width:80%; display:inline-block">
                                 <!-- only using an a here for bootstrap styling -->
                                 <div class="username" data-bind="text: Username"></div>
                                 <div class="helper" data-bind="css: $parent.getUserStatus($data)"></div>
@@ -89,11 +90,11 @@
             <div class="span9">
                 <div id="videoHolder" class="row-fluid">
 
-                    <div class="span6">
+                    <div class="span4">
                         <h4>اسکرین شما</h4>
                         <video id="0" class="video screen cool-background" autoplay="autoplay" onclick="changeStream(this.id)"></video>
                     </div>
-                    <div class="span6">
+                    <div class="span4">
                         <h4>شما</h4>
                         <video id="1" class="video mine cool-background" autoplay="autoplay" onclick="changeStream(this.id)"></video>
                     </div>
@@ -135,6 +136,8 @@
     </script>
    <script>
        changeStream = function (Click_id) {
+           $("video").prop('muted', true);
+           $(this).prop('muted', false);
            WebRtcDemo.App.resetStream(Click_id);
        };
    </script>

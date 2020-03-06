@@ -14,7 +14,15 @@ WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
         _connections = {},
         _streamIDs = {},
-        _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
+       // _iceServers = [{ url: 'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
+
+        _iceServers = [{
+            url: 'turn:numb.viagenie.ca',
+            credential: 'muazkh',
+            username: 'webrtc@live.com'
+        }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
+
+      
 
         /* Callbacks */
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
@@ -115,7 +123,7 @@ WebRtcDemo.ConnectionManager = (function () {
             console.log('WebRTC: received signal');
             
             // Route signal based on type
-            if (signal.sdp) {  // طرف تولید کرده برات فرستاده
+            if (signal.sdp) { 
                 _receivedSdpSignal(connection, partnerClientId, signal.sdp);
             } else if (signal.candidate) {
                 _receivedCandidateSignal(connection, partnerClientId, signal.candidate);
@@ -137,9 +145,14 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Close all of our connections
-        _closeAllConnections = function () {
+        _closeAllConnections = function (id) {
+          
             for (var connectionId in _connections) {
-                _closeConnection(connectionId);
+                if (connectionId != id) {
+                    console.log(id);
+                    _closeConnection(connectionId);
+                } 
+               
             }
         },
 

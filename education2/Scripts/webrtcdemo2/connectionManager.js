@@ -12,9 +12,13 @@ WebRTC API has been normalized using 'adapter.js'
 ************************************************/
 WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
-        _connections = {},
-        _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
-
+        _connections = {}, 
+       // _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
+        _iceServers = [{
+            url: 'turn:numb.viagenie.ca',
+            credential: 'muazkh',
+            username: 'webrtc@live.com'
+        }],
         /* Callbacks */
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
         _onStreamAddedCallback = function () { console.log('UNIMPLEMENTED: _onStreamAddedCallback'); },

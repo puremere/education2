@@ -30,7 +30,7 @@ namespace education2
         private static readonly List<User> Users = new List<User>();
         private static readonly List<UserCall> UserCalls = new List<UserCall>();
         private static readonly List<CallOffer> CallOffers = new List<CallOffer>();
-
+        public static string isChnager = "";
         public void Hang(string username)
         {
            
@@ -52,7 +52,7 @@ namespace education2
         public override System.Threading.Tasks.Task OnDisconnected(bool boolian)
         {
             // Hang up any calls the user is in
-            HangUp(); // Gets the user from "Context" which is available in the whole hub
+            HangUp(""); // Gets the user from "Context" which is available in the whole hub
 
             // Remove the user
             Users.RemoveAll(u => u.ConnectionId == Context.ConnectionId);
@@ -63,8 +63,10 @@ namespace education2
             return base.OnDisconnected(boolian);
         }
 
-        public void CallUser(string targetConnectionId)
+        public void CallUser(string targetConnectionId,string type)
         {
+            isChnager = type;
+            
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
             var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
 
@@ -76,12 +78,12 @@ namespace education2
                 return;
             }
 
-            // And that they aren't already in a call
-            if (GetUserCall(targetUser.ConnectionId) != null)
-            {
-                Clients.Caller.callDeclined(targetConnectionId, string.Format("{0} is already in a call.", targetUser.Username));
-                return;
-            }
+            //// And that they aren't already in a call
+            //if (GetUserCall(targetUser.ConnectionId) != null)
+            //{
+            //    Clients.Caller.callDeclined(targetConnectionId, string.Format("{0} is already in a call.", targetUser.Username));
+            //    return;
+            //}
 
             // They are here, so tell them someone wants to talk
             Clients.Client(targetConnectionId).incomingCall(callingUser);
@@ -121,13 +123,13 @@ namespace education2
             }
 
             // Make sure there is still an active offer.  If there isn't, then the other use hung up before the Callee answered.
-            var offerCount = CallOffers.RemoveAll(c => c.Callee.ConnectionId == callingUser.ConnectionId
-                                                  && c.Caller.ConnectionId == targetUser.ConnectionId);
-            if (offerCount < 1)
-            {
-                Clients.Caller.callEnded(targetConnectionId, string.Format("{0} تماس را زودتر قطع کرده است.", targetUser.Username));
-                return;
-            }
+            //var offerCount = CallOffers.RemoveAll(c => c.Callee.ConnectionId == callingUser.ConnectionId
+            //                                      && c.Caller.ConnectionId == targetUser.ConnectionId);
+            //if (offerCount < 1)
+            //{
+            //    Clients.Caller.callEnded(targetConnectionId, string.Format("{0} تماس را زودتر قطع کرده است.", targetUser.Username));
+            //    return;
+            //}
 
             // And finally... make sure the user hasn't accepted another call already
             //if (GetUserCall(targetUser.ConnectionId) != null)
@@ -146,17 +148,92 @@ namespace education2
                 
                Users = new List<User> { callingUser, targetUser },
             });
-            
+
 
             // Tell the original caller that the call was accepted
-            Clients.Client(targetConnectionId).callAccepted(callingUser);
+            //.Client(Context.ConnectionId).alertID(isChnager);
+            Clients.Client(targetConnectionId).callAccepted(callingUser, isChnager);
 
             // Update the user list, since thes two are now in a call
             SendUserListUpdate();
         }
        
-        public void HangUp()
+        public void HangUp(string partnerClientId)
         {
+            if (partnerClientId == "")
+            {
+                var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+
+                if (callingUser == null)
+                {
+                    return;
+                }
+
+                var currentCall = GetUserCallList(callingUser.ConnectionId);
+
+              
+                // Send a hang up message to each user in the call, if there is one
+                if (currentCall != null)
+                {
+                    foreach (var call in currentCall)
+                    {
+
+                        foreach (var user in call.Users.Where(u => u.ConnectionId != callingUser.ConnectionId))
+                        {
+                               Clients.Client(user.ConnectionId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
+                        }
+                    }
+                   
+
+                    // Remove the call from the list if there is only one (or none) person left.  This should
+                    // always trigger now, but will be useful when we implement conferencing.
+                    foreach (var call in currentCall)
+                    {
+                        call.Users.RemoveAll(u => u.ConnectionId == callingUser.ConnectionId);
+                        if (call.Users.Count < 2)
+                        {
+                            UserCalls.Remove(call);
+                        }
+                    }
+                   
+                }
+                Clients.Client(Context.ConnectionId).SetDefaultStream("0");
+
+                // Remove all offers initiating from the caller
+                CallOffers.RemoveAll(c => c.Caller.ConnectionId == callingUser.ConnectionId);
+
+                SendUserListUpdate();
+            }
+            else
+            {
+                var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+
+                if (callingUser == null)
+                {
+                    return;
+                }
+
+                var currentCall = GetUserCall(partnerClientId);
+
+                // Send a hang up message to each user in the call, if there is one
+                if (currentCall != null)
+                {
+                    Clients.Client(partnerClientId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
+
+
+                    UserCalls.Remove(currentCall);
+                }
+
+                // Remove all offers initiating from the caller
+                CallOffers.RemoveAll(c => c.Caller.ConnectionId == callingUser.ConnectionId);
+
+                SendUserListUpdate();
+            }
+            
+        }
+        public void HangUpEcexpt(string partnerClientId)
+        {
+           
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
 
             if (callingUser == null)
@@ -164,23 +241,35 @@ namespace education2
                 return;
             }
 
-            var currentCall = GetUserCall(callingUser.ConnectionId);
+            var currentCall = GetUserCallList(callingUser.ConnectionId);
+      
+            currentCall.RemoveAll(uc => uc.Users.SingleOrDefault(u => u.ConnectionId == partnerClientId) != null);
+         
 
             // Send a hang up message to each user in the call, if there is one
             if (currentCall != null)
             {
-                foreach (var user in currentCall.Users.Where(u => u.ConnectionId != callingUser.ConnectionId))
+                foreach (var call in currentCall)
                 {
-                    Clients.Client(user.ConnectionId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
+
+                    foreach (var user in call.Users.Where(u => u.ConnectionId != callingUser.ConnectionId ))
+                    {
+                        Clients.Client(user.ConnectionId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
+                    }
                 }
+
 
                 // Remove the call from the list if there is only one (or none) person left.  This should
                 // always trigger now, but will be useful when we implement conferencing.
-                currentCall.Users.RemoveAll(u => u.ConnectionId == callingUser.ConnectionId);
-                if (currentCall.Users.Count < 2)
+                foreach (var call in currentCall)
                 {
-                    UserCalls.Remove(currentCall);
+                    call.Users.RemoveAll(u => u.ConnectionId == callingUser.ConnectionId);
+                    if (call.Users.Count < 2)
+                    {
+                        UserCalls.Remove(call);
+                    }
                 }
+
             }
 
             // Remove all offers initiating from the caller
@@ -189,11 +278,18 @@ namespace education2
             SendUserListUpdate();
         }
         public void resetAllConnction(string id) {
+
+            Clients.Client(Context.ConnectionId).SetDefaultStream(id);
+           
             List<string> List = Users.Where(u => u.ConnectionId != Context.ConnectionId && u.ConnectionId != id).Select(x=>x.ConnectionId).ToList();
-            foreach(var item in List)
+           
+            foreach (var item in List)
             {
-                CallUser(item);
+               
+                CallUser(item, "");
             }
+
+            
         }
         
         // WebRTC Signal Handler
@@ -230,9 +326,17 @@ namespace education2
 
         private UserCall GetUserCall(string connectionId)
         {
+            
             var matchingCall =
-                UserCalls.SingleOrDefault(uc => uc.Users.SingleOrDefault(u => u.ConnectionId == connectionId) != null);
+                UserCalls.SingleOrDefault(uc => uc.Users.SingleOrDefault(u => u.ConnectionId == connectionId ) != null);
             return matchingCall;
+        }
+        private List<UserCall> GetUserCallList (string connectionId)
+        {
+            var matchingCall =
+                  UserCalls.Where(uc => uc.Users.SingleOrDefault(u => u.ConnectionId == connectionId) != null).ToList();
+            return matchingCall;
+
         }
 
         #endregion

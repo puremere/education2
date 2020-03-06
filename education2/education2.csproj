@@ -265,6 +265,7 @@
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="Content\toastr.css" />
+    <Content Include="Content\userDisplay.css" />
     <Content Include="favicon.ico" />
     <Content Include="Files\TQ4PFJA.wav" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />

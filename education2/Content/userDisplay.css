@@ -1,0 +1,14 @@
+﻿.mineholderAfter {
+    
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20000
+}
+
+.mineholder {
+    position: relative;
+   
+    margin: 0 auto;
+    z-index: 20000
+}

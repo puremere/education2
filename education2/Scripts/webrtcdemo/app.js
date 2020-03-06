@@ -14,10 +14,17 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         STes = {},
         _index,
         _connectionManager = connectionManager,
+        _indexMustBeChange,
         _connect = function (username, onSuccess, onFailure) {
             // Set Up SignalR Signaler
-
+            
             var hub = $.connection.chatHub;
+            hub.client.SetDefaultStream = function (index) {
+                _index = index;
+            },
+            hub.client.alertID = function (count) {
+                alert(count);
+            },
             hub.client.closeAll = function (id) {
                 
                 viewmodel.mode('idle');
@@ -48,22 +55,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
 
             // Hub Callback: Call Accepted
-            hub.client.callAccepted = function (acceptingUser, id) {
-
+            hub.client.callAccepted = function (acceptingUser, isChnager) {
+                _indexMustBeChange = isChnager;
+                if (isChnager != "") {
+                    
+                    _index = "1";
+                }
+                console.log(isChnager);
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
-
+                console.log(_index);
                 // Callee accepted our call, let's send them an offer with our video stream
                 console.log(_index);
-                var INTEGER = 0;
-                if (_index != null) {
-                    INTEGER = parseInt(_index)
-                }
-
-
-
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, STes[INTEGER]);
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, STes[_index]);
                 // Set UI into call mode
                 viewModel.Mode('incall');
+              
             };
 
 
@@ -162,7 +168,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 video: {
                     cursor: "always"
                 },
-                audio: false
+                audio: true
             }).then(
                 stream => {
                     console.log("awesom");
@@ -171,7 +177,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     STes["0"] = _screenStream;
                     
                     attachMediaStream(videoScreen, STes["0"]);
-
+                    
                 },
                 error => {
                     console.log("Unable to acquire screen capture", error);
@@ -198,6 +204,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                         // Store off the stream reference so we can share it later
                         _mediaStream = stream;
                         STes["1"] = _mediaStream;
+                        _index = "1";
                         // Load the stream into a video element so it starts playing in the UI
                         console.log('playing my local video feed');
                         var videoElement = document.querySelector('.video.mine');
@@ -221,7 +228,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         
         _attachUiHandlers = function () {
             // Add click handler to users in the "Users" pane
-            $('.user').live('click', function () {
+            $('.user i').live('click', function () {
+                var targetConnectionId = $(this).attr('data-cid');
+             
+                if (targetConnectionId != viewModel.MyConnectionId()) {
+                    //hub.invoke('HangUp', id);
+                    _hub.server.hangUp(targetConnectionId);
+                   // _hub.revoke('HangUp', targetConnectionId);
+                    connectionManager.closeConnection(targetConnectionId);
+                    viewModel.Mode('idle');
+                 
+                } else {
+                    alertify.error("Ah, nope.  Can't call yourself.");
+                }
+            });
+            $('.user a').live('click', function () {
                 // Find the target user's SignalR client id
                 var targetConnectionId = $(this).attr('data-cid');
 
@@ -235,8 +256,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 if (targetConnectionId != viewModel.MyConnectionId()) {
                     // Initiate a call
 
-                    _hub.server.callUser(targetConnectionId);// 
-                    console.log("callUser");
+                    _hub.server.callUser(targetConnectionId,"");// 
+                    console.log("callUser","");
                     // UI in calling mode
                     viewModel.Mode('calling');
                 } else {
@@ -248,8 +269,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             $('.hangup').click(function () {
                 // Only allow hangup if we are not idle
                 if (viewModel.Mode() != 'idle') {
-                    _hub.server.hangUp();
-                    connectionManager.closeAllConnections();
+                    _hub.server.hangUp("");
+                    connectionManager.closeAllConnections("");
                     viewModel.Mode('idle');
                 }
             });
@@ -274,12 +295,40 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
          
 
             var hub = $.connection.chatHub;
-            _index = id;
+           
+            // creation of first channel
+            if (id != "0" && id != "1") {
+
+
+                //close
+                _hub.server.hangUp(id);
+                // _hub.revoke('HangUp', targetConnectionId);
+                connectionManager.closeConnection(id);
+                viewModel.Mode('idle');
+
+                //open new
+                _hub.server.callUser(id,"1");// 
+
+
+                viewModel.Mode('calling');
+                console.log("stream is ready:" + _index);
+
+                
+            }
+            else {
+              
+               
+                hub.invoke('HangUpEcexpt', id);
+                WebRtcDemo.ConnectionManager.closeAllConnections(id);
+                WebRtcDemo.ViewModel.Mode('idle');
+                hub.invoke('resetAllConnction', id);   
+            }
+
+           
+           
+           
+
             
-            hub.invoke('PreHangUp', id);
-            WebRtcDemo.ConnectionManager.closeAllConnections();
-            WebRtcDemo.ViewModel.Mode('idle');
-            hub.invoke('resetAllConnction',id );   
         },
         _setupHubCallbacks = function (hub) {
 
@@ -301,15 +350,33 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                
                 // Bind the remote stream to the partner window
                 STes[partnerClientId] = event.stream;
-                
+
+                if (event.stream.audio == null) {
+                    console.log("audio is null");
+                } else if (event.stream.video == null){
+                    console.log("video is null");
+                }
                 const div = document.createElement('div');
-                div.className = 'span6';
-                div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)'></video>  `;
+                div.className = 'span4';
+                div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
                 var VHolder = document.getElementById('videoHolder');
                 VHolder.appendChild(div);
              
                 var ListOfVideo = document.getElementById(partnerClientId);
                 attachMediaStream(ListOfVideo, event.stream);
+
+                if (_indexMustBeChange == "1") {
+
+                    var hub = $.connection.chatHub;
+                    _index = partnerClientId;
+                    hub.invoke('HangUpEcexpt', _index);
+                    WebRtcDemo.ConnectionManager.closeAllConnections(_index);
+                    WebRtcDemo.ViewModel.Mode('idle');
+                    hub.invoke('resetAllConnction', _index);
+                }
+
+
+                console.log(_index);
                 //for (var i = 0; i < ListOfVideo.length; ++i) {
                 //    var id = ListOfVideo[i].attr['id'];
                 //    console.log(id);

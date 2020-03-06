@@ -15,21 +15,23 @@
     <!-- Styles -->
     <link href="/Content/icomoon/style.css" rel="stylesheet" />
     <link href="/Content/Site.css" rel="stylesheet" />
-    <link href="/Content/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
     <link href="/Content/alertify/alertify.core.css" rel="stylesheet" />
     <link href="/Content/alertify/alertify.default.css" rel="stylesheet" />
-
+   
+    <link href="~/Content/userDisplay.css" rel="stylesheet" />
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 </head>
 
-<body data-bind="attr: { 'data-mode': Mode }">
+<body data-bind="attr: { 'data-mode': Mode }" >
     <!-- Invalid browser alert, and reminder to enable media things -->
     <div class="container-fluid">
         <div class="row-fluid instructions">
-            <div class="span12">
+            <div class="span12" style="text-align:center">
                 <div class="alert"><h4>توجه!</h4> مرورگر مجوز وب کم و میکرفون را لازم دارد  <strong>امکانات سایت تنها با ارائه مجوز از طرف شما قابل ارائه می باشد</strong>.</div>
             </div>
         </div>
@@ -55,10 +57,10 @@
         </div>
     </div>
     <!-- App Area -->
-    <div class="container-fluid">
+    <div class="container-fluid" style="text-align:right">
         <div class="row-fluid">
             <!-- Side Bar -->
-            <div class="span3">
+            @*<div class="span3">
                 <!-- In Call Actions -->
                 <div class="well actions">
                     <div class="status" data-bind="text: CallStatus"></div>
@@ -79,28 +81,18 @@
                         <!-- /ko -->
                     </ul>
                 </div>
-            </div>
+            </div>*@
             <!-- Videos -->
             <div class="span9">
-                <div class="row-fluid">
-                   
-                    <div class="span6">
-                        <h4>شما</h4>
-                        <video id="1" class="video mine cool-background" autoplay="autoplay"></video>
+                <div class="" style="">
+
+                    <div class="mineholder" style="">
+                        <video style="width:100%;" id="1" class="video mine cool-background" autoplay="autoplay" muted></video>
                     </div>
-                    <div class="span6">
-                        <h4>مخاطب</h4>
+                    <div class="partnerholder" style=" display:none; width:100%; height:100% ;position:absolute; top:20px; left:0px; z-index:11000">
                         <video class="video partner cool-background" autoplay="autoplay"></video>
                     </div>
-                    <script>
-                        window.onload = function () {
-                            var element = document.getElementById('1');
-                            element.muted = "muted";
 
-                           
-                        }
-
-                    </script>
 
                 </div>
             </div>

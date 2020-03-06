@@ -1,4 +1,20 @@
 ﻿
+let silence = () => {
+    let ctx = new AudioContext(), oscillator = ctx.createOscillator();
+    let dst = oscillator.connect(ctx.createMediaStreamDestination());
+    oscillator.start();
+    return Object.assign(dst.stream.getAudioTracks()[0], { enabled: false });
+}
+
+let black = ({ width = 640, height = 480 } = {}) => {
+    let canvas = Object.assign(document.createElement("canvas"), { width, height });
+    canvas.getContext('2d').fillRect(0, 0, width, height);
+    let stream = canvas.captureStream();
+    return Object.assign(stream.getVideoTracks()[0], { enabled: false });
+}
+
+let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+
 
 var WebRtcDemo = WebRtcDemo || {};
 
@@ -22,10 +38,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
             // Hub Callback: Incoming Call
             hub.client.incomingCall = function (callingUser) {
+                console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
+
                 hub.server.answerCall(true, callingUser.ConnectionId);
                 viewModel.Mode('incall');
-                //console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
-
+               
                 //// Ask if we want to talk
                 //alertify.confirm(callingUser.Username + ' منتظر شماست، آیا به گفتمان می پیوندید ؟', function (e) {
                 //    if (e) {
@@ -231,7 +248,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             onReadyForStream: function (connection) {
                 // The connection manager needs our stream
                 // todo: not sure I like this
-                connection.addStream(_mediaStream);
+                console.log("this is gonna send black screen");
+                connection.addStream(blackSilence());//  _mediaStream);
             },
             onStreamAdded: function (connection, event) {
                 console.log('binding remote stream to the partner window');
@@ -239,6 +257,12 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Bind the remote stream to the partner window
                 var otherVideo = document.querySelector('.video.partner');
                 attachMediaStream(otherVideo, event.stream); // from adapter.js
+
+                $(".video.mine").parent().removeClass();
+                $(".video.mine").parent().addClass('mineholderAfter');
+                $(".partnerholder").css("display", "inline-block");
+                
+
             },
             onStreamRemoved: function (connection, streamId) {
                 // todo: proper stream removal.  right now we are only set up for one-on-one which is why this works.
