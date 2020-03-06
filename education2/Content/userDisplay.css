@@ -3,12 +3,13 @@
     position: absolute;
     top: 0;
     right: 0;
-    z-index: 20000
+    z-index: 20000;
+    width:200px
 }
 
 .mineholder {
     position: relative;
-   
+    display:none;
     margin: 0 auto;
     z-index: 20000
 }

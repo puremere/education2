@@ -351,14 +351,16 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Bind the remote stream to the partner window
                 STes[partnerClientId] = event.stream;
 
-                if (event.stream.audio == null) {
-                    console.log("audio is null");
-                } else if (event.stream.video == null){
-                    console.log("video is null");
-                }
+                
                 const div = document.createElement('div');
                 div.className = 'span4';
-                div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                if (event.stream.getVideoTracks() == "") {
+                    div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+                } else  {
+                    div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+
+                }
                 var VHolder = document.getElementById('videoHolder');
                 VHolder.appendChild(div);
              
@@ -395,8 +397,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Clear out the partner window
                 
                 var otherVideo = document.getElementById(partnerClientId);
-                otherVideo.src = '';
-                otherVideo.parentElement.remove();
+                if (otherVideo != null) {
+                    otherVideo.src = '';
+                    otherVideo.parentElement.remove();
+                }
+                
             }
         };
      
