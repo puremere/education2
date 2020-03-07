@@ -315,6 +315,11 @@ namespace education2
                
             //}
         }
+        public void SendSignalForStream(string signal, string targetConnectionId)
+        {
+            Clients.Client(targetConnectionId).changeStream(signal);
+
+        }
 
         #region Private Helpers
 

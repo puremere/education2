@@ -13,6 +13,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _hub,
         STes = {},
         _index,
+        _RequestedStream = 'video',
         _connectionManager = connectionManager,
         _indexMustBeChange,
         _connect = function (username, onSuccess, onFailure) {
@@ -66,7 +67,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 console.log(_index);
                 // Callee accepted our call, let's send them an offer with our video stream
                 console.log(_index);
+                connectionManager.sendSignal(acceptingUser.ConnectionId,'blank');
                 connectionManager.initiateOffer(acceptingUser.ConnectionId, STes[_index]);
+               
                 // Set UI into call mode
                 viewModel.Mode('incall');
               
@@ -181,6 +184,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 },
                 error => {
                     console.log("Unable to acquire screen capture", error);
+                    viewModel.Loading(false);
                 });
 
             getUserMedia(
@@ -190,6 +194,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     audio: true
                 },
                 function (stream) { // succcess callback gives us a media stream
+                    var audioTrack = stream.getAudioTracks()[0];
+                    _screenStream.addTrack(audioTrack);
+                    STes["0"] = _screenStream;
+
                     $('.instructions').hide();
 
                     // Now we have everything we need for interaction, so fire up SignalR
@@ -355,12 +363,17 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 const div = document.createElement('div');
                 div.className = 'span4';
                 if (event.stream.getVideoTracks() == "") {
+                    console.log("no-video ")
                     div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
 
                 } else  {
-                    div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
+                    div.innerHTML = ` <h4>مخاطب</h4> <video style="max-height:200px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                    console.log("no-audio ")
                 }
+                //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+               // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+
                 var VHolder = document.getElementById('videoHolder');
                 VHolder.appendChild(div);
              

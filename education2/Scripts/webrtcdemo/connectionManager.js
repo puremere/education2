@@ -116,7 +116,7 @@ WebRtcDemo.ConnectionManager = (function () {
 
         // Hand off a new signal from the signaler to the connection
         _newSignal = function (partnerClientId, data) {
-           
+          
             var signal = JSON.parse(data),
             connection = _getConnection(partnerClientId);
 
@@ -172,8 +172,7 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Send an offer for audio/video
-        _initiateOffer = function (partnerClientId, stream) {
-
+        _initiateOffer = function (partnerClientId, stream,streamType) {
           
             // Get a connection for the given partner
             var connection = _getConnection(partnerClientId);
@@ -189,6 +188,9 @@ WebRtcDemo.ConnectionManager = (function () {
                 });
             }, function (error) { alert('Error creating session description: ' + error); });
         };
+        _sendSignal = function (partnerClientId,signal) {
+            _signaler.sendSignalForStream(signal, partnerClientId);
+            }
 
     // Return our exposed API
     return {
@@ -196,6 +198,7 @@ WebRtcDemo.ConnectionManager = (function () {
         newSignal: _newSignal,
         closeConnection: _closeConnection,
         closeAllConnections: _closeAllConnections,
-        initiateOffer: _initiateOffer
+        initiateOffer: _initiateOffer,
+        sendSignal:_sendSignal
     };
 })();

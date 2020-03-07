@@ -8,8 +8,28 @@
 }
 
 .mineholder {
+    padding:10px;
+    float: right;
     position: relative;
-    display:none;
     margin: 0 auto;
-    z-index: 20000
+    z-index: 20000;
+    display: inline-block;
+    width: 50%;
+}
+
+.mineholderScreen {
+    padding: 10px;
+    float: left;
+    position: relative;
+    margin: 0 auto;
+    z-index: 20000;
+    display: inline-block;
+    width: 50%;
+}
+.mineholderScreenAfter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20000;
+    width: 200px
 }
