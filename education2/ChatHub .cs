@@ -35,18 +35,34 @@ namespace education2
         {
            
         }
-        public void Join(string username)
+        public void Join(string groupname , string username,string type)
         {
-           
-            // Add the new user
-            Users.Add(new User
+            User user = Users.SingleOrDefault(x => x.Username == username && x.GroupName == groupname);
+            if (user != null)
             {
-                Username = username,
-                ConnectionId = Context.ConnectionId
-            });
+                Groups.Remove(user.ConnectionId, groupname);
+                Groups.Add(Context.ConnectionId, groupname);
+                user.ConnectionId = Context.ConnectionId;
 
-            // Send down the new list to all clients
-            SendUserListUpdate();
+            }
+            else
+            {
+                
+
+                // Add the new user
+                Users.Add(new User
+                {
+                    Username = username,
+                    ConnectionId = Context.ConnectionId,
+                    GroupName = groupname,
+                    Type = type
+                });
+                Groups.Add(Context.ConnectionId, groupname);
+                // Send down the new list to all clients
+                SendUserListUpdate(groupname);
+            }
+
+            
         }
 
         public override System.Threading.Tasks.Task OnDisconnected(bool boolian)
@@ -54,11 +70,13 @@ namespace education2
             // Hang up any calls the user is in
             HangUp(""); // Gets the user from "Context" which is available in the whole hub
 
+            string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
             // Remove the user
             Users.RemoveAll(u => u.ConnectionId == Context.ConnectionId);
-
+            string Groupname = Users.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId).GroupName;
+            Groups.Remove(Context.ConnectionId, groupname);
             // Send down the new user list to all clients
-            SendUserListUpdate();
+            SendUserListUpdate(Groupname);
 
             return base.OnDisconnected(boolian);
         }
@@ -66,7 +84,7 @@ namespace education2
         public void CallUser(string targetConnectionId,string type)
         {
             isChnager = type;
-            
+            string groupname = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId).GroupName;
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
             var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
 
@@ -75,6 +93,7 @@ namespace education2
             {
                 // If not, let the caller know
                 Clients.Caller.callDeclined(targetConnectionId, "مخاطب در دسترس نیست");
+                SendUserListUpdate(groupname);
                 return;
             }
 
@@ -95,7 +114,10 @@ namespace education2
                 Callee = targetUser
             });
         }
-
+        public void RefreshUser() {
+            string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
+            SendUserListUpdate(groupname);
+        }
         public void AnswerCall(bool acceptCall, string targetConnectionId)
         {
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
@@ -155,13 +177,36 @@ namespace education2
             Clients.Client(targetConnectionId).callAccepted(callingUser, isChnager);
 
             // Update the user list, since thes two are now in a call
-            SendUserListUpdate();
+           // SendUserListUpdate("");
         }
        
+        public void StreamRequest()
+        {
+            User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
+            if (user != null)
+            {
+                User admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
+                 if(admin != null)
+                {
+                    Clients.Client(admin.ConnectionId).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", user.Username));
+
+                }
+
+            }
+        }
+        public void SendMessage(string message)
+        {
+            string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
+            string name = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).Username;
+            Clients.Group(groupname).setMessage(message, Context.ConnectionId,name);
+        }
         public void HangUp(string partnerClientId)
         {
+           // string groupname = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId).GroupName;
+
             if (partnerClientId == "")
             {
+
                 var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
 
                 if (callingUser == null)
@@ -202,7 +247,7 @@ namespace education2
                 // Remove all offers initiating from the caller
                 CallOffers.RemoveAll(c => c.Caller.ConnectionId == callingUser.ConnectionId);
 
-                SendUserListUpdate();
+                //SendUserListUpdate(groupname);
             }
             else
             {
@@ -227,13 +272,14 @@ namespace education2
                 // Remove all offers initiating from the caller
                 CallOffers.RemoveAll(c => c.Caller.ConnectionId == callingUser.ConnectionId);
 
-                SendUserListUpdate();
+                //SendUserListUpdate(groupname);
             }
             
         }
         public void HangUpEcexpt(string partnerClientId)
         {
-           
+            string groupname = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId).GroupName;
+
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
 
             if (callingUser == null)
@@ -275,13 +321,14 @@ namespace education2
             // Remove all offers initiating from the caller
             CallOffers.RemoveAll(c => c.Caller.ConnectionId == callingUser.ConnectionId);
 
-            SendUserListUpdate();
+            //SendUserListUpdate(groupname);
         }
         public void resetAllConnction(string id) {
 
             Clients.Client(Context.ConnectionId).SetDefaultStream(id);
+            string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
            
-            List<string> List = Users.Where(u => u.ConnectionId != Context.ConnectionId && u.ConnectionId != id).Select(x=>x.ConnectionId).ToList();
+            List<string> List = Users.Where(u => u.ConnectionId != Context.ConnectionId && u.ConnectionId != id && u.GroupName == groupname).Select(x=>x.ConnectionId).ToList();
            
             foreach (var item in List)
             {
@@ -323,10 +370,10 @@ namespace education2
 
         #region Private Helpers
 
-        private void SendUserListUpdate()
+        private void SendUserListUpdate(string groupname)
         {
-            Users.ForEach(u => u.InCall = (GetUserCall(u.ConnectionId) != null));
-            Clients.All.updateUserList(Users);
+           List<User> SelectedUsers =   Users.Where(u => u.GroupName == groupname).ToList();
+            Clients.Group(groupname).updateUserList(SelectedUsers);
         }
 
         private UserCall GetUserCall(string connectionId)

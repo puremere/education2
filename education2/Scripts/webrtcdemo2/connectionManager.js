@@ -23,14 +23,16 @@ WebRtcDemo.ConnectionManager = (function () {
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
         _onStreamAddedCallback = function () { console.log('UNIMPLEMENTED: _onStreamAddedCallback'); },
         _onStreamRemovedCallback = function () { console.log('UNIMPLEMENTED: _onStreamRemovedCallback'); },
+        _onTrackAddedCallback = function () { console.log('UNIMPLEMENTED: _onTrackAddedCallback'); },
 
         // Initialize the ConnectionManager with a signaler and callbacks to handle events
-        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved) {
+        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved, onTrackAdded) {
             _signaler = signaler;
 
             _onReadyForStreamCallback = onReadyForStream || _onReadyForStreamCallback;
             _onStreamAddedCallback = onStreamAdded || _onStreamAddedCallback;
-            _onStreamRemovedCallback = onStreamRemoved || _onStreamRemovedCallback;
+            _onStreamRemovedCallback = onStreamRemoved || _onStreamRemovedCallback
+            _onTrackAddedCallback = onTrackAdded || _onTrackAddedCallback;
         },
 
         // Create a new WebRTC Peer Connection with the given partner
@@ -79,6 +81,11 @@ WebRtcDemo.ConnectionManager = (function () {
                 // A stream was removed
                 _onStreamRemovedCallback(connection, event.stream.id);
             };
+            connection.ontrack = function (event) {
+                console.log('WebRTC: adding track');
+                _onTrackAddedCallback(connection, event);
+
+            }
 
             // Store away the connection
             _connections[partnerClientId] = connection;

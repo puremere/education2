@@ -6679,9 +6679,9 @@ body {
 	background-color: #E2E2E2;
 	margin: 0;
 }
-h1, h2, h3, h4, h5, h6,input, textarea {
-	font-family: IRANSans !important;
-     color: #4d4d4d;
+h1, h2, h3, h4, h5, h6, input, textarea, button,a,p,div {
+    font-family: IRANSans !important;
+    color: #4d4d4d;
 }
 h1 {
 	font-weight: bold;

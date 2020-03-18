@@ -57,5 +57,9 @@ namespace education.Controllers
 
             return View();
         }
+        public ActionResult chat()
+        {
+            return View();
+        }
     }
 }

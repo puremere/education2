@@ -1,0 +1,101 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> ثبت نام- ورود</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.css" rel="stylesheet" />
+    <!-- Custom Theme Style -->
+    <link href="~/Content/custom.css" rel="stylesheet">
+    @*<link href="~/AdminPanel/build/css/bootstrap-rlt.css" rel="stylesheet" />*@
+    <link href="~/Content/toastr.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-colorpicker.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-tagsinput.css" rel="stylesheet" />
+    @*<link href="@BotDetect.Web.CaptchaUrls.Absolute.LayoutStyleSheetUrl"
+        rel="stylesheet" type="text/css" />*@
+    @Styles.Render("~/bundles/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link href="~/Content/LoginRegisterStyle.css" rel="stylesheet" />
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/jquery-ui.min.js" type="text/javascript"></script>
+    <!-- Bootstrap -->
+
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/toastr.js"></script>
+    <script src="~/Scripts/bootstrap-tagsinput.min.js"></script>
+    <script src="~/Scripts/bootstrap-tagsinput-angular.min.js"></script>
+</head>
+<body>
+
+    <div class="login-page">
+        <div class="form">
+            <form class="register-form" action="register">
+                <input id="name" type="text" placeholder="نام" />
+                <input id="password" type="password" placeholder="رمز عبور" />
+                <input type="text" placeholder="شماره موبایل" />
+                <input hidden type="text" value="R" id="pageType" />
+                <button>ثبت نام </button>
+                <p class="message">قبلاً ثبت نام کرده اید؟  <a href="#">ورود </a></p>
+                <p class="forget">رمز عبور خود را  فراموش کرده اید؟ <a href="#">بازیابی</a></p>
+                <p class="Register">ثبت نام نکرده اید؟ <a href="#">ساخت حساب کاربری</a></p>
+            </form>
+            <form class="login-form" action="indexLogin" method="post">
+                <input id="Lusername" name="Lusername" type="text" placeholder="شماره موبایل" />
+                <input id="Lpassword" name="Lpassword" type="password" placeholder="رمز عبور" />
+                <div id="login">ورود</div>
+                <p class="message">ثبت نام نکرده اید؟ <a href="#">ساخت حساب کاربری</a></p>
+            </form>
+
+
+        </div>
+    </div>
+
+
+    <script>
+        $('.message a').click(function () {
+            $('form').animate({ height: "toggle", opacity: "toggle" }, "slow");
+        });
+        $('.forget').click(function () {
+            $('#pageType').val('C');
+            $(this).siblings('button').text('تایید');
+            $(this).siblings('#name').hide();
+            $(this).siblings('#password').hide();
+            $('.forget').hide();
+            $('.Register').show();
+        })
+        $('.Register').click(function () {
+            $('#pageType').val('R');
+            $(this).siblings('button').text('ثبت نام');
+            $(this).siblings('#name').show();
+            $(this).siblings('#password').show();
+            $('.Register').hide();
+            $('.forget').show();
+        })
+    </script>
+    <script>
+        $("#login").click(function () {
+            var USER = $("#Lusername").val();
+            var PASS = $("#Lpassword").val();
+            if (PASS === "1") {
+                window.location.href = '/screen/userface?username=' + USER;
+            }
+            else {
+                window.location.href = '/screen/teacherface?username=' + USER;
+
+            }
+            
+        })
+    </script>
+
+</body>
+</html>
+
+
+
+
+

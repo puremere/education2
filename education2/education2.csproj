@@ -167,8 +167,9 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="ChatHub .cs" />
+    <Compile Include="Controllers\CustomLoginController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\TeacherController.cs" />
+    <Compile Include="Controllers\ScreenController.cs" />
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -198,6 +199,7 @@
     <Content Include="Content\bootstrap\img\glyphicons-halflings.png" />
     <Content Include="Content\bootstrap\js\bootstrap.js" />
     <Content Include="Content\bootstrap\js\bootstrap.min.js" />
+    <Content Include="Content\chatStyle.css" />
     <Content Include="Content\custom.css" />
     <Content Include="Content\flexslider.css" />
     <Content Include="Content\flowplayer.skin.css" />
@@ -208,6 +210,8 @@
     <Content Include="Content\icomoon\license.txt" />
     <Content Include="Content\icomoon\lte-ie7.js" />
     <Content Include="Content\icomoon\style.css" />
+    <Content Include="Content\HomeIndexStyle.css" />
+    <Content Include="Content\LoginRegisterStyle.css" />
     <Content Include="Content\main.css" />
     <Content Include="Content\style.css" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
@@ -286,6 +290,7 @@
     <Content Include="img\banner7.png" />
     <Content Include="img\banner8.png" />
     <Content Include="img\banner9.png" />
+    <Content Include="img\loader.gif" />
     <Content Include="Scripts\adapter.js" />
     <Content Include="Scripts\alertify.min.js" />
     <Content Include="Scripts\bootstrap-tagsinput-angular.min.js" />
@@ -385,6 +390,7 @@
     <Content Include="Scripts\webrtcdemo\app.js" />
     <Content Include="Scripts\webrtcdemo3\app.js" />
     <Content Include="Scripts\webrtcdemo\connectionManager.js" />
+    <Content Include="Scripts\webrtcdemo\multiStream.js" />
     <Content Include="Scripts\webrtcdemo\viewModel.js" />
     <None Include="Scripts\_references.js" />
     <Content Include="Web.config" />
@@ -402,13 +408,15 @@
     <Content Include="Views\Home\Contact.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\User\Index.cshtml" />
-    <Content Include="Views\Teacher\Index.cshtml" />
+    <Content Include="Views\Screen\Index.cshtml" />
     <Content Include="Views\Shared\_TeacherLayout.cshtml" />
     <Content Include="Views\Shared\_UserLayout.cshtml" />
-    <Content Include="Views\Teacher\test.cshtml" />
+    <Content Include="Views\Screen\TeacherFace.cshtml" />
     <Content Include="Views\User\test.cshtml" />
     <Content Include="Scripts\rtc-demo.js.orig" />
-    <Content Include="Views\Teacher\test2.cshtml" />
+    <Content Include="Views\Screen\UserFace.cshtml" />
+    <Content Include="Views\CustomLogin\Index.cshtml" />
+    <Content Include="Views\User\chat.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

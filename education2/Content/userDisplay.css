@@ -33,3 +33,73 @@
     z-index: 20000;
     width: 200px
 }
+
+#vidoeHolder{
+    width:70%;
+    display:inline-block; position:relative; overflow:hidden
+}
+#chatHolder {
+    width: 30%;
+    display: inline-block;
+}
+#BothContainer {
+    margin-top: 50px;
+    display: flex;
+}
+.partnerholder {
+    display: block;
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    left: 0px;
+    top: 0;
+}
+.partnerholder2 {
+    display: block;
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    right: 0px;
+    top: 0;
+}
+.navbar-fixed-top{
+    z-index:99999
+}
+@media only screen and (max-width: 800px) {
+    #BothContainer {
+        margin-top: 50px;
+        display: block;
+    }
+    .partnerholder {
+        height: auto;
+        position: relative;
+        display: inline-block;
+        float: right;
+        width:100%
+    }
+    .partnerholder2 {
+        height: auto;
+        position: relative;
+        display: inline-block;
+        float: left;
+        width: 100%
+    }
+    #vidoeHolder {
+        width: 100%
+    }
+    #chatHolder {
+        width: 100%;
+
+    }
+    .mineholderAfter {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 20000;
+        width: 70px
+    }
+    .video partner{
+        
+    }
+}
+

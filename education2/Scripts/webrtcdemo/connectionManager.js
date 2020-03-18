@@ -14,7 +14,7 @@ WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
         _connections = {},
         _streamIDs = {},
-       // _iceServers = [{ url: 'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
+        // _iceServers = [{ url: 'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
 
         _iceServers = [{
             url: 'turn:numb.viagenie.ca',
@@ -22,7 +22,7 @@ WebRtcDemo.ConnectionManager = (function () {
             username: 'webrtc@live.com'
         }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
 
-      
+
 
         /* Callbacks */
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
@@ -48,7 +48,7 @@ WebRtcDemo.ConnectionManager = (function () {
             // ICE Candidate Callback
             connection.onicecandidate = function (event) {
                 if (event.candidate) {
-                   
+
                     // Found a new candidate
                     console.log('WebRTC: new ICE candidate');
                     _signaler.sendSignal(JSON.stringify({ "candidate": event.candidate }), partnerClientId);
@@ -95,19 +95,19 @@ WebRtcDemo.ConnectionManager = (function () {
 
         // Process a newly received SDP signal
         _receivedSdpSignal = function (connection, partnerClientId, sdp) {
-          
+
             console.log('WebRTC: processing sdp signal');
             connection.setRemoteDescription(new RTCSessionDescription(sdp), function () {
-               
+
                 if (connection.remoteDescription.type == "offer") {
                     console.log('WebRTC: received offer, sending response...');
                     _onReadyForStreamCallback(connection); // stream into connection
                     connection.createAnswer(function (desc) {
-                            connection.setLocalDescription(desc, function () {
-                                _signaler.sendSignal(JSON.stringify({ "sdp": connection.localDescription }), partnerClientId);
-                            });
+                        connection.setLocalDescription(desc, function () {
+                            _signaler.sendSignal(JSON.stringify({ "sdp": connection.localDescription }), partnerClientId);
+                        });
                     },
-                    function (error) { console.log('Error creating session description: ' + error); });
+                        function (error) { console.log('Error creating session description: ' + error); });
                 } else if (connection.remoteDescription.type == "answer") {
                     console.log('WebRTC: received answer');
                 }
@@ -116,14 +116,14 @@ WebRtcDemo.ConnectionManager = (function () {
 
         // Hand off a new signal from the signaler to the connection
         _newSignal = function (partnerClientId, data) {
-          
+
             var signal = JSON.parse(data),
-            connection = _getConnection(partnerClientId);
+                connection = _getConnection(partnerClientId);
 
             console.log('WebRTC: received signal');
-            
+
             // Route signal based on type
-            if (signal.sdp) { 
+            if (signal.sdp) {
                 _receivedSdpSignal(connection, partnerClientId, signal.sdp);
             } else if (signal.candidate) {
                 _receivedCandidateSignal(connection, partnerClientId, signal.candidate);
@@ -132,27 +132,27 @@ WebRtcDemo.ConnectionManager = (function () {
 
         // Process a newly received Candidate signal
         _receivedCandidateSignal = function (connection, partnerClientId, candidate) {
-         
+
             console.log('WebRTC: processing candidate signal');
             connection.addIceCandidate(new RTCIceCandidate(candidate));
         },
 
         // Retreive an existing or new connection for a given partner
         _getConnection = function (partnerClientId) {
-          
+
             var connection = _connections[partnerClientId] || _createConnection(partnerClientId);
             return connection;
         },
 
         // Close all of our connections
         _closeAllConnections = function (id) {
-          
+
             for (var connectionId in _connections) {
                 if (connectionId != id) {
                     console.log(id);
                     _closeConnection(connectionId);
-                } 
-               
+                }
+
             }
         },
 
@@ -172,25 +172,69 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Send an offer for audio/video
-        _initiateOffer = function (partnerClientId, stream,streamType) {
-          
+        _initiateOffer = function (partnerClientId, STES) {
+
+
             // Get a connection for the given partner
             var connection = _getConnection(partnerClientId);
 
+            //connection.addTrack(STES[0].getVideoTracks()[0], STES[0]);
+            //connection.addTrack(STES[0].getAudioTracks()[0], STES[0]);
+            //connection.addTrack(STES[1].getVideoTracks()[0], STES[1]);
+
+            //STES[0].getTracks().forEach(function (track) {
+            //    connection.addTrack(track, STES[0]);
+            //});
+            //STES[1].getTracks().forEach(function (track) {
+            //    connection.addTrack(track, STES[1]);
+            //});
+            var st1 = new MediaStream();
+            var st2 = new MediaStream();
+
+            for (const stream of STES) {
+                stream.getTracks().forEach(function (track) {
+
+                    connection.addTrack(track, st1);
+                });
+            };
+
+            //for (const track of STES[0].getTracks()) {
+            //    connection.addTrack(track, st1);
+            //};
+            //for (const track2 of STES[1].getTracks()) {
+            //    connection.addTrack(track2, st2);
+            //};
             // Add our audio/video stream
-            connection.addStream(stream);
-          
-          
+            // connection.addStream(stream);
+            //STES.forEach(function (stream) {
+            //    stream.getTracks().forEach(function (track) {
+            //        connection.addTrack(track, stream);
+            //    });
+            //});
+
             // Send an offer for a connection
             connection.createOffer(function (desc) {
                 connection.setLocalDescription(desc, function () {
                     _signaler.sendSignal(JSON.stringify({ "sdp": connection.localDescription }), partnerClientId);
                 });
             }, function (error) { alert('Error creating session description: ' + error); });
-        };
-        _sendSignal = function (partnerClientId,signal) {
+        },
+        _sendSignal = function (partnerClientId, signal) {
             _signaler.sendSignalForStream(signal, partnerClientId);
-            }
+        },
+        _changeTrack = function (partnerClientId, STES) {
+            var connection = _getConnection(partnerClientId);
+            var st1 = new MediaStream();
+            var st2 = new MediaStream();
+            for (const stream of STES) {
+                stream.getTracks().forEach(function (track) {
+
+                    st2.addTrack(track, st1);
+                });
+            };
+            connection.getSenders().map(sender =>
+                sender.replaceTrack(st2.getTracks().find(t => t.kind == sender.track.kind), st2));
+        }
 
     // Return our exposed API
     return {
@@ -199,6 +243,8 @@ WebRtcDemo.ConnectionManager = (function () {
         closeConnection: _closeConnection,
         closeAllConnections: _closeAllConnections,
         initiateOffer: _initiateOffer,
-        sendSignal:_sendSignal
+        sendSignal: _sendSignal,
+        changeTrack: _changeTrack
+       
     };
 })();
