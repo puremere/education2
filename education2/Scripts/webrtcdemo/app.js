@@ -1,5 +1,21 @@
 ﻿
 
+let silence = () => {
+    let ctx = new AudioContext(), oscillator = ctx.createOscillator();
+    let dst = oscillator.connect(ctx.createMediaStreamDestination());
+    oscillator.start();
+    return Object.assign(dst.stream.getAudioTracks()[0], { enabled: false });
+}
+
+let black = ({ width = 640, height = 480 } = {}) => {
+    let canvas = Object.assign(document.createElement("canvas"), { width, height });
+    canvas.getContext('2d').fillRect(0, 0, width, height);
+    let stream = canvas.captureStream();
+    return Object.assign(stream.getVideoTracks()[0], { enabled: false });
+}
+
+let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+//let blackSilence = (...args) => new MediaStream([black(...args)]);
 
 var WebRtcDemo = WebRtcDemo || {};
 
@@ -92,10 +108,19 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 console.log(_index);
                 // Callee accepted our call, let's send them an offer with our video stream
                 console.log(_index);
-                SteamToGo["0"] = STes["0"];
-               // SteamToGo["1"] = STes[_index];
-                connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
+               // SteamToGo["0"] = STes["0"];
+                //SteamToGo["0"] = STes[_index];
+                // send signal moved to onclick
+                //connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
+                if (_RequestedStream != "blank") {
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [STes["0"]],"1");
+
+                }
+                else {
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [STes["0"]],"0");
+
+                }
+
                 //mixer.frameInterval = 1;
                 //mixer.startDrawingFrames();
 
@@ -212,7 +237,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     _screenStream = stream;
                     STes["0"] = _screenStream;
                   
-                    attachMediaStream(videoScreen, STes["0"]);
+                    attachMediaStream(videoScreen, _screenStream);
 
                 },
                 error => {
@@ -227,9 +252,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     audio: true
                 },
                 function (stream) { // succcess callback gives us a media stream
-                    //var audioTrack = stream.getAudioTracks()[0];
-                    //_screenStream.addTrack(audioTrack);
-                    //STes["0"] = _screenStream;
+                    var audioTrack = stream.getAudioTracks()[0];
+                    _screenStream.addTrack(audioTrack);
+                    STes["0"] = _screenStream;
 
                     $('.instructions').hide();
 
@@ -271,10 +296,6 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _attachUiHandlers = function () {
             // Add click handler to users in the "Users" pane
 
-            $("#add").click(function () {
-                SteamToGo.push(STes[_index]);
-                connectionManager.changeTrack()
-            });
             $("#refresh").click(function () {
                 _hub.server.refreshUser();// 
             });
@@ -283,10 +304,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var targetConnectionId = $(this).attr('data-cid');
                 if (targetConnectionId != viewModel.MyConnectionId()) {
                     _RequestedStream = 'screen';
+                   // connectionManager.sendSignal(targetConnectionId, _RequestedStream);
                     _hub.server.callUser(targetConnectionId, "");// 
-                    console.log("callUser", "");
-                    // UI in calling mode
-                    viewModel.Mode('calling');
+                    //console.log("callUser", "");
+                    //// UI in calling mode
+                    //viewModel.Mode('calling');
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
@@ -297,10 +319,12 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var targetConnectionId = $(this).attr('data-cid');
                 if (targetConnectionId != viewModel.MyConnectionId()) {
                     _RequestedStream = 'video';
-                    _hub.server.callUser(targetConnectionId, "");// 
-                    console.log("callUser", "");
-                    // UI in calling mode
-                    viewModel.Mode('calling');
+                    connectionManager.sendSignal(targetConnectionId, _RequestedStream);
+
+                    //_hub.server.callUser(targetConnectionId, "");// 
+                    //console.log("callUser", "");
+                    //// UI in calling mode
+                    //viewModel.Mode('calling');
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
@@ -464,50 +488,64 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
 
             var hub = $.connection.chatHub;
-
+            console.log(id);
+            connectionManager.changeTrack([STes[id]], id);
             // creation of first channel
-            if (id != "0" && id != "1") {
-
-                //var connections = connectionManager.getConnection();
-                //var thisConnection = connectionManager.getConnecttionByID();
-                //connections.forEach(function (connection) {
-                //    if (connection != thisConnection) {
-                //        connection.stream.resetVideoStreams(STes[id]);
-                //    }
-                //});
 
 
-                //mixer.resetVideoStreams(STes[id]);
+            //close one connection and then close other and reopen other with new connection
+            //if (id != "0" && id != "1") {
 
-               // close
-                _hub.server.hangUp(id);
-                // _hub.revoke('HangUp', targetConnectionId);
-                connectionManager.closeConnection(id);
-                viewModel.Mode('idle');
+            //    //var connections = connectionManager.getConnection();
+            //    //var thisConnection = connectionManager.getConnecttionByID();
+            //    //connections.forEach(function (connection) {
+            //    //    if (connection != thisConnection) {
+            //    //        connection.stream.resetVideoStreams(STes[id]);
+            //    //    }
+            //    //});
 
-                //open new
-                _hub.server.callUser(id, "1");// 
-
-
-                viewModel.Mode('calling');
-                console.log("stream is ready:" + _index);
+                
+                 
 
 
-            }
-            else {
+
+
+
+
+
+
+
+
+
+            //   //// close
+            //   // _hub.server.hangUp(id);
+            //   // // _hub.revoke('HangUp', targetConnectionId);
+            //   // connectionManager.closeConnection(id);
+            //   // viewModel.Mode('idle');
+
+            //   // //open new
+            //   // _hub.server.callUser(id, "1");// 
+
+
+            //   // viewModel.Mode('calling');
+            //   // console.log("stream is ready:" + _index);
+
+
+            //}
+            //else {
                
                
                
 
 
               
-                //console.log("no hangup");
-                //_RequestedStream = 'blank';
-                //hub.invoke('HangUpEcexpt', id);
-                //WebRtcDemo.ConnectionManager.closeAllConnections(id);
-                //WebRtcDemo.ViewModel.Mode('idle');
-                //hub.invoke('resetAllConnction', id);
-            }
+            //    //console.log("no hangup");
+            //    //_RequestedStream = 'blank';
+            //    //hub.invoke('HangUpEcexpt', id);
+            //    //WebRtcDemo.ConnectionManager.closeAllConnections(id);
+            //    //WebRtcDemo.ViewModel.Mode('idle');
+            //    //hub.invoke('resetAllConnction', id);
+            //}
 
 
 
@@ -546,7 +584,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
 
                 } else {
-                    div.innerHTML = `<h5 style="display:inline-block">مخاطب</h5> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                    div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
                     console.log("no-audio ")
                 }
                 //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
@@ -558,20 +596,29 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 var ListOfVideo = document.getElementById(partnerClientId);
                 attachMediaStream(ListOfVideo, event.stream);
-
-                if (_indexMustBeChange == "1") {
-
-                   // SteamToGo["1"] = STes[_index];
-                    var hub = $.connection.chatHub;
-                    _index = partnerClientId;
-                    _RequestedStream = 'blank';
-                    console.log('index after change : ' + _index);
-                    hub.invoke('HangUpEcexpt', _index);
-                    WebRtcDemo.ConnectionManager.closeAllConnections(_index);
-                    WebRtcDemo.ViewModel.Mode('idle');
-                    hub.invoke('resetAllConnction', _index);
-                    
+                if (event.stream.getAudioTracks() != null) {
+                    if (event.stream.getAudioTracks()[0] != null) {
+                        
+                    }
                 }
+
+                
+
+
+                // for closing all connection and repoening them
+                //if (_indexMustBeChange == "1") {
+
+                //   // SteamToGo["1"] = STes[_index];
+                //    var hub = $.connection.chatHub;
+                //    _index = partnerClientId;
+                //    _RequestedStream = 'blank';
+                //    console.log('index after change : ' + _index);
+                //    hub.invoke('HangUpEcexpt', _index);
+                //    WebRtcDemo.ConnectionManager.closeAllConnections(_index);
+                //    WebRtcDemo.ViewModel.Mode('idle');
+                //    hub.invoke('resetAllConnction', _index);
+                    
+                //}
 
 
                 console.log(_index);
@@ -585,6 +632,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 //  attachMediaStream(otherVideo, STes[id]); // from adapter.js
             },
+
             onStreamRemoved: function (connection, partnerClientId) {
                 // todo: proper stream removal.  right now we are only set up for one-on-one which is why this works.
 

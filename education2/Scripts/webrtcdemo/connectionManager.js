@@ -143,6 +143,11 @@ WebRtcDemo.ConnectionManager = (function () {
             var connection = _connections[partnerClientId] || _createConnection(partnerClientId);
             return connection;
         },
+        _addConnection = function (partnerClientId) {
+
+            var connection =  _createConnection("*"+partnerClientId);
+            return connection;
+        },
 
         // Close all of our connections
         _closeAllConnections = function (id) {
@@ -172,11 +177,18 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Send an offer for audio/video
-        _initiateOffer = function (partnerClientId, STES) {
+        _initiateOffer = function (partnerClientId, STES,type) {
 
-
+            var connection;
+            if (type == "1") {
+                connection = _addConnection(partnerClientId);
+                connection.
+            }
+            else {
+                connection = _getConnection(partnerClientId);
+            }
             // Get a connection for the given partner
-            var connection = _getConnection(partnerClientId);
+             //connection = _getConnection(partnerClientId);
 
             //connection.addTrack(STES[0].getVideoTracks()[0], STES[0]);
             //connection.addTrack(STES[0].getAudioTracks()[0], STES[0]);
@@ -220,20 +232,35 @@ WebRtcDemo.ConnectionManager = (function () {
             }, function (error) { alert('Error creating session description: ' + error); });
         },
         _sendSignal = function (partnerClientId, signal) {
+
+
             _signaler.sendSignalForStream(signal, partnerClientId);
         },
-        _changeTrack = function (partnerClientId, STES) {
-            var connection = _getConnection(partnerClientId);
-            var st1 = new MediaStream();
-            var st2 = new MediaStream();
-            for (const stream of STES) {
-                stream.getTracks().forEach(function (track) {
+        _changeTrack = function (STES,selectedID) {
+            for (var connectionId in _connections) {
+                if (connectionId != selectedID)
+                {
+                    connection = _connections[connectionId];
+                    var st1 = new MediaStream();
+                    var st2 = new MediaStream();
+                    for (const stream of STES) {
+                        stream.getTracks().forEach(function (track) {
 
-                    st2.addTrack(track, st1);
-                });
-            };
-            connection.getSenders().map(sender =>
-                sender.replaceTrack(st2.getTracks().find(t => t.kind == sender.track.kind), st2));
+                            st2.addTrack(track);
+                        });
+                    };
+                    connection.getSenders().map(sender =>
+                        sender.replaceTrack(st2.getTracks().find(t => t.kind == sender.track.kind), st2));
+
+                }
+                
+
+            }
+            
+            
+            
+           
+            
         }
 
     // Return our exposed API

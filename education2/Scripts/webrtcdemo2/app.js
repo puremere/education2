@@ -14,7 +14,8 @@ let black = ({ width = 640, height = 480 } = {}) => {
     return Object.assign(stream.getVideoTracks()[0], { enabled: false });
 }
 
-let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+//let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+let blackSilence = (...args) => new MediaStream([black(...args)]);
 
 
 var WebRtcDemo = WebRtcDemo || {};
@@ -125,6 +126,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             // Hub Callback: Update User List
             hub.client.changeStream = function (stream) {
+
+
                 if (stream == 'video') {
                     console.log('video');
                     _finalStream = _mediaStream;
@@ -406,7 +409,16 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //    });
                
                 //connection.addStream(_mediaStream); 
-                connection.addStream(_finalStream);
+
+
+                var st1 = new MediaStream();
+                var st2 = new MediaStream();
+
+                _finalStream.getTracks().forEach(function (track) {
+
+                    connection.addTrack(track, st1);
+                });
+                //connection.addStream(_finalStream);
                
                 
             },
@@ -441,6 +453,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var st1 = new MediaStream();
                 if (event.streams[0].getVideoTracks() != null) {
                     if (event.streams[0].getVideoTracks()[0] != null) {
+                        console.log("1 has video")
                         st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
                     }
@@ -448,6 +461,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
                 if (event.streams[0].getVideoTracks() != null) {
                     if (event.streams[0].getAudioTracks()[0] != null) {
+                        console.log("1 has audio")
                         st1.addTrack(event.streams[0].getAudioTracks()[0]);
                     }
                 }
@@ -456,12 +470,15 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var st2 = new MediaStream();
                 if (event.streams[0].getVideoTracks() != null) {
                     if (event.streams[0].getVideoTracks()[1] != null) {
+                        console.log("2 has video")
                         st2.addTrack(event.streams[0].getVideoTracks()[1]);
 
                     }
                 }
                 if (event.streams[0].getVideoTracks() != null) {
+                    
                     if (event.streams[0].getAudioTracks()[1] != null) {
+                        console.log("2 has audio")
                         st2.addTrack(event.streams[0].getAudioTracks()[1]);
                     }
                 }

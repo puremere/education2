@@ -184,7 +184,9 @@ WebRtcDemo.ConnectionManager = (function () {
                     _signaler.sendSignal(JSON.stringify({ "sdp": connection.localDescription }), partnerClientId);
                 });
             }, function (error) { alert('Error creating session description: ' + error); });
-        };
+        },
+       
+
 
     // Return our exposed API
     return {
@@ -192,6 +194,7 @@ WebRtcDemo.ConnectionManager = (function () {
         newSignal: _newSignal,
         closeConnection: _closeConnection,
         closeAllConnections: _closeAllConnections,
-        initiateOffer: _initiateOffer
+        initiateOffer: _initiateOffer,
+       
     };
 })();
