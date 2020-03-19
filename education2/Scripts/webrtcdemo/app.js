@@ -111,7 +111,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                // SteamToGo["0"] = STes["0"];
                 //SteamToGo["0"] = STes[_index];
                 // send signal moved to onclick
-                //connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
+                connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 if (_RequestedStream != "blank") {
                     connectionManager.initiateOffer(acceptingUser.ConnectionId, [STes["0"]],"1");
 
@@ -303,12 +303,18 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 var targetConnectionId = $(this).attr('data-cid');
                 if (targetConnectionId != viewModel.MyConnectionId()) {
+
+                    _hub.server.hangUp(targetConnectionId);
+                    // _hub.revoke('HangUp', targetCo/
+                    connectionManager.closeConnection(targetConnectionId);
+                    viewModel.Mode('idle');
+
                     _RequestedStream = 'screen';
                    // connectionManager.sendSignal(targetConnectionId, _RequestedStream);
                     _hub.server.callUser(targetConnectionId, "");// 
-                    //console.log("callUser", "");
-                    //// UI in calling mode
-                    //viewModel.Mode('calling');
+                    console.log("callUser", "");
+                    // UI in calling mode
+                    viewModel.Mode('calling');
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
@@ -318,13 +324,20 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 var targetConnectionId = $(this).attr('data-cid');
                 if (targetConnectionId != viewModel.MyConnectionId()) {
-                    _RequestedStream = 'video';
-                    connectionManager.sendSignal(targetConnectionId, _RequestedStream);
+                    //hang up first
+                    _hub.server.hangUp(targetConnectionId);
+                    // _hub.revoke('HangUp', targetCo/
+                    connectionManager.closeConnection(targetConnectionId);
+                    viewModel.Mode('idle');
 
-                    //_hub.server.callUser(targetConnectionId, "");// 
-                    //console.log("callUser", "");
-                    //// UI in calling mode
-                    //viewModel.Mode('calling');
+                    //create connection next
+                    _RequestedStream = 'video';
+                   // connectionManager.sendSignal(targetConnectionId, _RequestedStream);
+
+                    _hub.server.callUser(targetConnectionId, "");// 
+                    console.log("callUser", "");
+                    // UI in calling mode
+                    viewModel.Mode('calling');
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
@@ -573,32 +586,32 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             onStreamAdded: function (partnerClientId, event) {
                 console.log('binding remote stream to the partner window');
 
-                // Bind the remote stream to the partner window
-                STes[partnerClientId] = event.stream;
-
-
-                const div = document.createElement('div');
-                div.className = 'span4';
-                if (event.stream.getVideoTracks() == "") {
-                    console.log("no-video ")
-                    div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                } else {
-                    div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-                    console.log("no-audio ")
-                }
-                //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
-                var VHolder = document.getElementById('videoHolder');
-                VHolder.appendChild(div);
-
-                var ListOfVideo = document.getElementById(partnerClientId);
-                attachMediaStream(ListOfVideo, event.stream);
                 if (event.stream.getAudioTracks() != null) {
                     if (event.stream.getAudioTracks()[0] != null) {
-                        
+                        // Bind the remote stream to the partner window
+                        STes[partnerClientId] = event.stream;
+
+
+                        const div = document.createElement('div');
+                        div.className = 'span4';
+                        if (event.stream.getVideoTracks() == "") {
+                            console.log("no-video ")
+                            div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+                        } else {
+                            div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                            console.log("no-audio ")
+                        }
+                        //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+                        // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+
+                        var VHolder = document.getElementById('videoHolder');
+                        VHolder.appendChild(div);
+
+                        var ListOfVideo = document.getElementById(partnerClientId);
+                        attachMediaStream(ListOfVideo, event.stream);
+
                     }
                 }
 

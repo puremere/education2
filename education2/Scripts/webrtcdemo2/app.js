@@ -115,7 +115,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 // Let the user know why the server says the call is over
                 //الرت نمیده
-                alertify.error(reason);
+               // alertify.error(reason);
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);

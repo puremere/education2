@@ -177,16 +177,9 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Send an offer for audio/video
-        _initiateOffer = function (partnerClientId, STES,type) {
+        _initiateOffer = function (partnerClientId, STES) {
 
-            var connection;
-            if (type == "1") {
-                connection = _addConnection(partnerClientId);
-                connection.
-            }
-            else {
-                connection = _getConnection(partnerClientId);
-            }
+             var connection = _getConnection(partnerClientId);
             // Get a connection for the given partner
              //connection = _getConnection(partnerClientId);
 
