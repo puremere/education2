@@ -113,11 +113,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // send signal moved to onclick
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 if (_RequestedStream != "blank") {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [STes["0"]],"1");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [blackSilence(), blackSilence()],"1");
 
                 }
                 else {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [STes["0"]],"0");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [blackSilence(), blackSilence()],"0");
 
                 }
 
@@ -502,7 +502,13 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             var hub = $.connection.chatHub;
             console.log(id);
-            connectionManager.changeTrack([STes[id]], id);
+            if (id == "0") {
+                connectionManager.changeTrack([STes["0"], STes["1"]], id);
+
+            } else {
+
+                connectionManager.changeTrack([STes["1"], STes["0"]], id);
+            }
             // creation of first channel
 
 

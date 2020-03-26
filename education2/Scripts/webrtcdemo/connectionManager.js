@@ -14,6 +14,7 @@ WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
         _connections = {},
         _streamIDs = {},
+        _sender,
         // _iceServers = [{ url: 'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names. stun:74.125.142.127:19302
 
         _iceServers = [{
@@ -195,11 +196,11 @@ WebRtcDemo.ConnectionManager = (function () {
             //});
             var st1 = new MediaStream();
             var st2 = new MediaStream();
-
+           
             for (const stream of STES) {
                 stream.getTracks().forEach(function (track) {
 
-                    connection.addTrack(track, st1);
+                  _sender=  connection.addTrack(track, st1);
                 });
             };
 
@@ -233,6 +234,7 @@ WebRtcDemo.ConnectionManager = (function () {
             for (var connectionId in _connections) {
                 if (connectionId != selectedID)
                 {
+                    //روش اول 
                     connection = _connections[connectionId];
                     var st1 = new MediaStream();
                     var st2 = new MediaStream();
@@ -242,8 +244,42 @@ WebRtcDemo.ConnectionManager = (function () {
                             st2.addTrack(track);
                         });
                     };
-                    connection.getSenders().map(sender =>
-                        sender.replaceTrack(st2.getTracks().find(t => t.kind == sender.track.kind), st2));
+
+                                        //connection.getSenders().map(sender =>
+                    //    sender.replaceTrack((sender.track.kind == "audio")? newStream.getAudioTracks()[0]: nowVideo));
+
+                     // روش دوم
+                    var i = 0;
+                    var j = 0
+                    for (const sender of connection.getSenders()) {
+                        if (sender.track.kind == "audio")
+                        {
+                            if (st2.getAudioTracks()[i] != null) {
+                                sender.replaceTrack(st2.getAudioTracks()[i]);
+                                i += 1;
+                            }
+                           
+
+                        } else {
+                            if (st2.getVideoTracks()[j] != null) {
+                                sender.replaceTrack(st2.getVideoTracks()[j]);
+                                j += 1;
+                            }
+                            
+                        }
+                       
+
+                    }
+                   
+                    //connection = _connections[connectionId];
+                    //var st1 = new MediaStream();
+                    //Promise.all(pc1.getSenders().map(sender =>
+                    //    sender.replaceTrack((sender.track.kind == "audio") ?
+                    //        newStream.getAudioTracks()[0] :
+                    //        newStream.getVideoTracks()[0])))
+                    //    .then(() => log("Flip!"))
+                    //    .catch(failed);
+                    
 
                 }
                 
