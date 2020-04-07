@@ -15,8 +15,7 @@ let black = ({ width = 640, height = 480 } = {}) => {
 }
 
 //let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
-let blackSilence = (...args) => new MediaStream([black(...args)]);
-
+let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
 
 var WebRtcDemo = WebRtcDemo || {};
 
@@ -26,11 +25,12 @@ var WebRtcDemo = WebRtcDemo || {};
 //  feature: multiple chat partners
 
 WebRtcDemo.App = (function (viewModel, connectionManager) {
-    var _mediaStream,
+    var _mediaStream ,
         _hub,
         STes = [],
         _screenStream,
         _finalStream,
+        _geustStream,
 
         _connect = function (username, onSuccess, onFailure) {
             // Set Up SignalR Signaler
@@ -91,8 +91,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
 
-                // Callee accepted our call, let's send them an offer with our video stream
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
+                connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, [_geustStream], "1");
+                //connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
 
                 // Set UI into call mode
                 viewModel.Mode('incall');
@@ -125,27 +126,55 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
 
             // Hub Callback: Update User List
-            hub.client.changeStream = function (stream) {
+            hub.client.changeStream = function (stream, acceptingUser) {
+                console.log(acceptingUser.ConnectionId);
+                connectionManager.changeTrack([_screenStream], acceptingUser.ConnectionId);
+
+                ////روش دوم
+                //if (stream == 'video') {
+                //    console.log('video');
+                //    _finalStream = _mediaStream;
+                //    connectionManager.changeTrack([_screenStream], id);
+                //}
+                //else if (stream == 'screen') {
+                //    console.log('screen');
+                //    if (_screenStream == null) {
+                //        _finalStream = _mediaStream;
+                //        connectionManager.changeTrack([_screenStream], id);
+
+                //    } else {
+                //        _finalStream = _screenStream;
+                //        connectionManager.changeTrack([_screenStream], id);
+
+                //    }
+                //}
+                //else {
+                //    console.log('blank');
+                //    connectionManager.changeTrack([_screenStream], id);
+                   
+                //}
+                
 
 
-                if (stream == 'video') {
-                    console.log('video');
-                    _finalStream = _mediaStream;
-                }
-                else if (stream == 'screen') {
-                    console.log('screen');
-                    if (_screenStream == null) {
-                        _finalStream = _mediaStream;
+                // روش اول
+                //if (stream == 'video') {
+                //    console.log('video');
+                //    _finalStream = _mediaStream;
+                //}
+                //else if (stream == 'screen') {
+                //    console.log('screen');
+                //    if (_screenStream == null) {
+                //        _finalStream = _mediaStream;
 
-                    } else {
-                        _finalStream = _screenStream;
+                //    } else {
+                //        _finalStream = _screenStream;
 
-                    }
-                }
-                else {
-                    console.log('blank');
-                    _finalStream = blackSilence();
-                }
+                //    }
+                //}
+                //else {
+                //    console.log('blank');
+                //    _finalStream = blackSilence();
+                //}
                
             };
 
@@ -263,7 +292,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                    
                     $('.instructions').hide();
                     _mediaStream = stream;
-
+                    _finalStream = stream;
                     var videoElement = document.querySelector('.video.mine');
                     attachMediaStream(videoElement, stream);
                     $(".audio.mine").css("display", "none");
@@ -385,7 +414,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _callbacks = {
             
             onReadyForStream: function (connection) {
-             
+              
                 // The connection manager needs our stream
                 // todo: not sure I like this
 
@@ -414,10 +443,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var st1 = new MediaStream();
                 var st2 = new MediaStream();
 
-                _finalStream.getTracks().forEach(function (track) {
+               // st2.getAudioTracks[0] = blackSilence().getAudioTracks[0];
+               // st2.getAudioTracks[0] = _mediaStream.getAudioTracks[0];
+
+                //st2.getVideoTracks[0] = blackSilence().getVideoTracks[0];
+               // st2.getVideoTracks[0] = _mediaStream.getVideoTracks[0];
+              
+                //let STES = [_mediaStream, blackSilence()];
+                //for (const stream of STES) {
+                    
+                //};
+                _mediaStream.getTracks().forEach(function (track) {
 
                     connection.addTrack(track, st1);
                 });
+                console.log("adding media stream");
                 //connection.addStream(_finalStream);
                
                 
@@ -449,7 +489,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             
                 var otherVideo = document.querySelector('.video.partner');
                 var otherVideo2 = document.querySelector('.video.partner2');
-
+                _geustStream = event.stream;
                 var st1 = new MediaStream();
                 if (event.streams[0].getVideoTracks() != null) {
                     if (event.streams[0].getVideoTracks()[0] != null) {
@@ -477,9 +517,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
                 if (event.streams[0].getVideoTracks() != null) {
                     
-                    if (event.streams[0].getAudioTracks()[1] != null) {
+                    if (event.streams[0].getAudioTracks()[9] != null) {
                         console.log("2 has audio")
-                        st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                        st2.addTrack(event.streams[0].getAudioTracks()[9]);
                     }
                 }
                 //

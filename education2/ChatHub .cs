@@ -185,7 +185,7 @@ namespace education2
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
-                User admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
+                User admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin" );
                  if(admin != null)
                 {
                     Clients.Client(admin.ConnectionId).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", user.Username));
@@ -364,7 +364,8 @@ namespace education2
         }
         public void SendSignalForStream(string signal, string targetConnectionId)
         {
-            Clients.Client(targetConnectionId).changeStream(signal, Context.ConnectionId);
+            var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+            Clients.Client(targetConnectionId).changeStream(signal, callingUser);
 
         }
 

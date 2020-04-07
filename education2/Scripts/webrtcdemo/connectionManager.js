@@ -28,17 +28,19 @@ WebRtcDemo.ConnectionManager = (function () {
         /* Callbacks */
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
         _onStreamAddedCallback = function () { console.log('UNIMPLEMENTED: _onStreamAddedCallback'); },
+        _onTrackAddedCallback = function () { console.log('UNIMPLEMENTED: _onTrackAddedCallback'); },
         _onStreamRemovedCallback = function () { console.log('UNIMPLEMENTED: _onStreamRemovedCallback'); },
 
         // Initialize the ConnectionManager with a signaler and callbacks to handle events
-        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved) {
+        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved, onTrackAdded) {
             _signaler = signaler;
 
             _onReadyForStreamCallback = onReadyForStream || _onReadyForStreamCallback;
             _onStreamAddedCallback = onStreamAdded || _onStreamAddedCallback;
+            _onTrackAddedCallback = onTrackAdded || _onTrackAddedCallback;
             _onStreamRemovedCallback = onStreamRemoved || _onStreamRemovedCallback;
         },
-
+        
         // Create a new WebRTC Peer Connection with the given partner
         _createConnection = function (partnerClientId) {
             console.log('WebRTC: creating connection...');
@@ -79,6 +81,10 @@ WebRtcDemo.ConnectionManager = (function () {
                 // A stream was added, so surface it up to our UI via callback
                 _onStreamAddedCallback(partnerClientId, event);
             };
+            connection.onTrackAdded = function (event) {
+                _streamIDs[partnerClientId] = event.stream.id;
+                _onTrackAddedCallback(partnerClientId, event);
+            }
 
             connection.onremovestream = function (event) {
                 console.log('WebRTC: removing stream');
@@ -232,7 +238,8 @@ WebRtcDemo.ConnectionManager = (function () {
         },
         _changeTrack = function (STES,selectedID) {
             for (var connectionId in _connections) {
-                if (connectionId != selectedID)
+                //if (connectionId != selectedID)
+                if (true)
                 {
                     //روش اول 
                     connection = _connections[connectionId];

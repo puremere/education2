@@ -113,11 +113,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // send signal moved to onclick
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 if (_RequestedStream != "blank") {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream, _screenStream], "1");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [blackSilence(), blackSilence(), blackSilence(), blackSilence()], "1");
 
                 }
                 else {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream, _screenStream], "0");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [blackSilence(), blackSilence(), blackSilence(), blackSilence()], "0");
 
                 }
 
@@ -155,8 +155,6 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 viewModel.Mode('idle');
             };
             hub.client.streamRequest = function (connectionId, reason) {
-                _RequestedStream = 'blank';
-                _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
             }
 
@@ -254,8 +252,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     audio: true
                 },
                 function (stream) { // succcess callback gives us a media stream
-                   // var audioTrack = stream.getAudioTracks()[0];
-                    _screenStream.addTrack(silence());
+                    var audioTrack = stream.getAudioTracks()[0];
+                    _screenStream.addTrack(audioTrack);
                     STes["0"] = _screenStream;
 
                     $('.instructions').hide();
@@ -511,14 +509,13 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             var hub = $.connection.chatHub;
             console.log(id);
-            connectionManager.changeTrack([STes["1"], STes[id]], id);
-            //if (id == "0") {
-            //    connectionManager.changeTrack([ STes["0"], STes["1"]], id);
+            if (id == "0") {
+                connectionManager.changeTrack([blackSilence(), blackSilence(),STes["0"], STes["1"]], id);
 
-            //} else {
+            } else {
 
-                
-            //}
+                connectionManager.changeTrack([blackSilence(), blackSilence(),STes["1"], STes["0"]], id);
+            }
             // creation of first channel
 
 
@@ -606,58 +603,35 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
 
                 console.log("on track added fire");
-                var i = new MediaStream();
-                if (event.stream.getAudioTracks[0] != null) {
-                    i.getAudioTracks[0] = event.stream.getAudioTracks[0];
 
+                if (event.stream.getAudioTracks() != null) {
+                    if (event.stream.getAudioTracks()[0] != null) {
+                        // Bind the remote stream to the partner window
+                        STes[partnerClientId] = event.stream;
+
+
+                        const div = document.createElement('div');
+                        div.className = 'span4';
+                        if (event.stream.getVideoTracks() == "") {
+                            console.log("no-video ")
+                            div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+                        } else {
+                            div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                            console.log("no-audio ")
+                        }
+                        //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
+
+                        // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+
+                        var VHolder = document.getElementById('videoHolder');
+                        VHolder.appendChild(div);
+
+                        var ListOfVideo = document.getElementById(partnerClientId);
+                        attachMediaStream(ListOfVideo, event.stream);
+
+                    }
                 }
-                if (event.stream.getVideoTracks[0] != null) {
-                    i.getVideoTracks[0] = event.stream.getVideoTracks[0];
-
-                }
-                const div = document.createElement('div');
-                div.className = 'span4';
-                console.log("no-video ")
-                div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
-
-                var VHolder = document.getElementById('videoHolder');
-                VHolder.appendChild(div);
-
-                var ListOfVideo = document.getElementById(partnerClientId);
-                attachMediaStream(ListOfVideo, event.stream);
-                STes[partnerClientId] = event.stream;
-
-
-
-                //if (event.stream.getAudioTracks() != null) {
-                //    if (event.stream.getAudioTracks()[0] != null) {
-                //        // Bind the remote stream to the partner window
-                //        STes[partnerClientId] = event.stream;
-
-
-                //        const div = document.createElement('div');
-                //        div.className = 'span4';
-                //        if (event.stream.getVideoTracks() == "") {
-                //            console.log("no-video ")
-                //            div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                //        } else {
-                //            div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-                //            console.log("no-audio ")
-                //        }
-                //        //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                //        // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
-                //        var VHolder = document.getElementById('videoHolder');
-                //        VHolder.appendChild(div);
-
-                //        var ListOfVideo = document.getElementById(partnerClientId);
-                //        attachMediaStream(ListOfVideo, event.stream);
-
-                //    }
-                //}
 
 
 
@@ -726,72 +700,35 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             onTrackAdded: function (connection, event) {
 
                 console.log("on track added fire");
-                var partnerClientId = "hhjhj";
-                //if (event.streams[0] != null) {
 
-                //    // Bind the remote stream to the partner window
-                //    //var i;
-                //    //for (i = 0; i < 2; i++) {
-                //    //    if (event.streams[0].getAudioTracks[1] != null) {
-                            
-                //    //    }
-                //    //}
-
-                //    var i = new MediaStream();
-                //    i.getAudioTracks[0] = event.streams[0].getAudioTracks[0];
-                //    i.getVideoTracks[0] = event.streams[0].getVideoTracks[0];
-                //    const div = document.createElement('div');
-                //    div.className = 'span4';
-                //    console.log("no-video ")
-                //    div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                if (event.stream.getAudioTracks() != null) {
+                    if (event.stream.getAudioTracks()[0] != null) {
+                        // Bind the remote stream to the partner window
+                        STes[partnerClientId] = event.stream;
 
 
-                //    var VHolder = document.getElementById('videoHolder');
-                //    VHolder.appendChild(div);
+                        const div = document.createElement('div');
+                        div.className = 'span4';
+                        if (event.stream.getVideoTracks() == "") {
+                            console.log("no-video ")
+                            div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
 
-                //    var ListOfVideo = document.getElementById(partnerClientId);
-                //    attachMediaStream(ListOfVideo, i);
+                        } else {
+                            div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+                            console.log("no-audio ")
+                        }
+                        //div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
 
+                        // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
 
+                        var VHolder = document.getElementById('videoHolder');
+                        VHolder.appendChild(div);
 
-                //    STes[partnerClientId] = event.streams[0];
+                        var ListOfVideo = document.getElementById(partnerClientId);
+                        attachMediaStream(ListOfVideo, event.stream);
 
-
-
-
-                //}
-
-
-
-
-                //if (event.stream.getAudioTracks() != null) {
-                //    if (event.stream.getAudioTracks()[0] != null) {
-                //         Bind the remote stream to the partner window
-                //        STes[partnerClientId] = event.stream;
-
-
-                //        const div = document.createElement('div');
-                //        div.className = 'span4';
-                //        if (event.stream.getVideoTracks() == "") {
-                //            console.log("no-video ")
-                //            div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                //        } else {
-                //            div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-                //            console.log("no-audio ")
-                //        }
-                //        div.innerHTML = ` <h4>مخاطب</h4> <audio id='` + partnerClientId + `'  controls autoplay class="audio mine"></audio> `;
-
-                //         div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
-                //        var VHolder = document.getElementById('videoHolder');
-                //        VHolder.appendChild(div);
-
-                //        var ListOfVideo = document.getElementById(partnerClientId);
-                //        attachMediaStream(ListOfVideo, event.stream);
-
-                //    }
-                //}
+                    }
+                }
 
 
 
