@@ -179,18 +179,34 @@ namespace education2
             // Update the user list, since thes two are now in a call
            // SendUserListUpdate("");
         }
-       
-        public void StreamRequest()
+
+        public void callEveryOne()
         {
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
-                User admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin" );
-                 if(admin != null)
+                List<User> UserList = Users.Where(x => x.GroupName == user.GroupName && x.ConnectionId != user.ConnectionId).ToList();
+                foreach ( User guest in UserList )
                 {
-                    Clients.Client(admin.ConnectionId).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", user.Username));
+                    Clients.Client(guest.ConnectionId).callEveryOne(user.ConnectionId);
 
                 }
+
+            }
+        }
+        public void resPonseToCallEveryOne(string requestee)
+        {
+            
+            Clients.Client(requestee).areYouStillThere(Context.ConnectionId);
+        }
+        public void StreamRequest(string connectionID)
+        {
+            User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
+            if (user != null)
+            {
+                User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
+                Clients.Client(connectionID).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username));
+
 
             }
         }

@@ -269,6 +269,7 @@ WebRtcDemo.ConnectionManager = (function () {
         closeConnection: _closeConnection,
         closeAllConnections: _closeAllConnections,
         initiateOffer: _initiateOffer,
-        changeTrack: _changeTrack
+        changeTrack: _changeTrack,
+        sendSignal: _sendSignal
     };
 })();

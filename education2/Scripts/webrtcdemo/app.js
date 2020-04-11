@@ -34,6 +34,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _RequestedStream = 'blank',
         _connectionManager = connectionManager,
         _indexMustBeChange,
+        _noMoreConnection,
         mixer,
         _connect = function (username, onSuccess, onFailure) {
             // Set Up SignalR Signaler
@@ -144,16 +145,31 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Hub Callback: Call Ended
             hub.client.callEnded = function (connectionId, reason) {
                 console.log('تماس با ' + connectionId + ' پایان یافت: ' + reason);
-
+                _noMoreConnection = "";
                 // Let the user know why the server says the call is over
                 alertify.error(reason);
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);
 
+              
+              
+               
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
             };
+            hub.client.callEveryOne = function (connectionID) {
+                console.log("i am called");
+                if (_noMoreConnection != "true") {
+                    //_noMoreConnection = true;
+                    hub.server.resPonseToCallEveryOne(connectionID);
+                    console.log(connectionID + "i have stream are you ready")
+                }
+                else {
+                    console.log("i am buisy")
+                }
+            };
+         
             hub.client.streamRequest = function (connectionId, reason) {
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
@@ -297,7 +313,18 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
         _attachUiHandlers = function () {
             // Add click handler to users in the "Users" pane
+            $(".transmit").click(function () {
+                if (_noMoreConnection == "") {
+                    _noMoreConnection = "true";
+                    alertify.error("true")
+                }
+                else {
+                    _noMoreConnection = "";
+                    alertify.success("")
 
+                }
+               
+            });
             $("#refresh").click(function () {
                 _hub.server.refreshUser();// 
             });
@@ -609,24 +636,34 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 var i = new MediaStream();
                 if (event.stream.getAudioTracks[0] != null) {
                     i.getAudioTracks[0] = event.stream.getAudioTracks[0];
-
+                    console.log("is-audio ")
                 }
                 if (event.stream.getVideoTracks[0] != null) {
                     i.getVideoTracks[0] = event.stream.getVideoTracks[0];
-
+                    console.log("is-video ")
                 }
-                const div = document.createElement('div');
-                div.className = 'span4';
-                console.log("no-video ")
-                div.innerHTML = `<h6 style="display:inline-block">مخاطب</h6> <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
-
-
-                var VHolder = document.getElementById('videoHolder');
-                VHolder.appendChild(div);
 
                 var ListOfVideo = document.getElementById(partnerClientId);
-                attachMediaStream(ListOfVideo, event.stream);
-                STes[partnerClientId] = event.stream;
+                if (ListOfVideo == null) {
+                    const div = document.createElement('div');
+                    div.className = 'span4';
+                    div.innerHTML = ` <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
+
+
+                    var VHolder = document.getElementById('videoHolder');
+                    VHolder.appendChild(div);
+                    var vid = document.getElementById(partnerClientId);
+                    attachMediaStream(vid, event.stream);
+                    STes[partnerClientId] = event.stream;
+                }
+                else {
+                    attachMediaStream(ListOfVideo, event.stream);
+                    STes[partnerClientId] = event.stream;
+                }
+
+                
+
+               
 
 
 
@@ -683,7 +720,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 //        // div.innerHTML = ` <h4>مخاطب</h4> <video id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
 
-                //        var VHolder = document.getElementById('videoHolder');
+                //       
                 //        VHolder.appendChild(div);
 
                 //        var ListOfVideo = document.getElementById(partnerClientId);
