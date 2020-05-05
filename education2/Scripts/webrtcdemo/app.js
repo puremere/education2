@@ -1,4 +1,62 @@
-﻿
+﻿var videoElement = document.querySelector('.video.mine');
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
+var _mediaStream;
+audioSelect.onchange = getStream;
+videoSelect.onchange = getStream;
+
+getStream().then(getDevices).then(gotDevices);
+
+function getDevices() {
+    // AFAICT in Safari this only gets default devices until gUM is called :/
+    return navigator.mediaDevices.enumerateDevices();
+}
+
+function gotDevices(deviceInfos) {
+    window.deviceInfos = deviceInfos; // make available to console
+    console.log('Available input and output devices:', deviceInfos);
+    for (const deviceInfo of deviceInfos) {
+        const option = document.createElement('option');
+        option.value = deviceInfo.deviceId;
+        if (deviceInfo.kind === 'audioinput') {
+            option.text = deviceInfo.label || `Microphone ${audioSelect.length + 1}`;
+            audioSelect.appendChild(option);
+        } else if (deviceInfo.kind === 'videoinput') {
+            option.text = deviceInfo.label || `Camera ${videoSelect.length + 1}`;
+            videoSelect.appendChild(option);
+        }
+    }
+}
+
+function getStream() {
+    if (window.stream) {
+        window.stream.getTracks().forEach(track => {
+            track.stop();
+        });
+    }
+    const audioSource = audioSelect.value;
+    const videoSource = videoSelect.value;
+    const constraints = {
+        audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+        video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+    };
+    return navigator.mediaDevices.getUserMedia(constraints).
+        then(gotStream).catch(handleError);
+}
+
+function gotStream(stream) {
+    _mediaStream = stream;
+    //  window.stream = stream; // make stream available to console
+    audioSelect.selectedIndex = [...audioSelect.options].
+        findIndex(option => option.text === stream.getAudioTracks()[0].label);
+    videoSelect.selectedIndex = [...videoSelect.options].
+        findIndex(option => option.text === stream.getVideoTracks()[0].label);
+    videoElement.srcObject = stream;
+}
+
+function handleError(error) {
+    console.error('Error: ', error);
+}
 
 let silence = () => {
     let ctx = new AudioContext(), oscillator = ctx.createOscillator();
@@ -25,7 +83,7 @@ var WebRtcDemo = WebRtcDemo || {};
 //  feature: multiple chat partners
 
 WebRtcDemo.App = (function (viewModel, connectionManager) {
-    var _mediaStream,
+    var 
         _screenStream,
         _hub,
         STes = [],
@@ -114,11 +172,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // send signal moved to onclick
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 if (_RequestedStream != "blank") {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream, _screenStream], "1");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream], "1");
 
                 }
                 else {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream, _screenStream], "0");
+                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream], "0");
 
                 }
 
@@ -151,7 +209,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);
-
+                $("#" + connectionId).parent(".span4").remove();
               
               
                
@@ -191,8 +249,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     console.log('connected to SignalR hub... connection id: ' + _hub.connection.id);
 
                     // Tell the hub what our username is
-                    hub.server.join(username, viewModel.Username(), 'admin');
-
+                    hub.server.join(viewModel.Groupname(), username, 'admin');
+                 
 
                     if (onSuccess) {
                         onSuccess(hub);
@@ -223,21 +281,22 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         },
 
         _getUsername = function () {
-            alertify.prompt(" نام گروه ؟", function (e, username) {
+            alertify.prompt(" نام شما ؟", function (e, username) {
                 if (e == false || username == '') {
                     username = 'کاربر ' + Math.floor((Math.random() * 10000) + 1);
-                    alertify.success('شما به نام گروه نیاز دارید : ' + username);
+                    alertify.success('شما به نام  نیاز دارید : ' + username);
                 }
 
                 // proceed to next step, get media access and start up our connection
                 _startSession(username);
+              
             }, '');
         },
 
         _startSession = function (username) {
 
             // Set the selected username in the UI
-            viewModel.Groupname(username);
+            viewModel.Username(username);
             viewModel.Loading(true); // Turn on the loading indicator
 
             // Ask the user for permissions to access the webcam and mic
@@ -253,65 +312,77 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     console.log("awesom");
                     var videoScreen = document.querySelector('.video.screen');
                     _screenStream = stream;
-                    STes["0"] = _screenStream;
+                   
 
                     attachMediaStream(videoScreen, _screenStream);
-
+                    _screenStream.addTrack(silence());
+                    STes["0"] = _screenStream;
                 },
                 error => {
                     console.log("Unable to acquire screen capture", error);
                     viewModel.Loading(false);
                 });
 
-            getUserMedia(
-                {
-                    // Permissions to request
-                    video: true,
-                    audio: true
-                },
-                function (stream) { // succcess callback gives us a media stream
-                   // var audioTrack = stream.getAudioTracks()[0];
-                    _screenStream.addTrack(silence());
-                    STes["0"] = _screenStream;
+         
 
-                    $('.instructions').hide();
+            $('.instructions').hide();
 
-                    // Now we have everything we need for interaction, so fire up SignalR
-                    _connect(username, function (hub) {
-                        // tell the viewmodel our conn id, so we can be treated like the special person we are.
-                        viewModel.MyConnectionId(hub.connection.id);
+            // Now we have everything we need for interaction, so fire up SignalR
+            _connect(username, function (hub) {
+                // tell the viewmodel our conn id, so we can be treated like the special person we are.
+                viewModel.MyConnectionId(hub.connection.id);
 
-                        // Initialize our client signal manager, giving it a signaler (the SignalR hub) and some callbacks
-                        // alert('initializing connection manager');
-                        connectionManager.initialize(hub.server, _callbacks.onReadyForStream, _callbacks.onStreamAdded, _callbacks.onTrackAdded,_callbacks.onStreamRemoved);
+                // Initialize our client signal manager, giving it a signaler (the SignalR hub) and some callbacks
+                // alert('initializing connection manager');
+                connectionManager.initialize(hub.server, _callbacks.onReadyForStream, _callbacks.onStreamAdded, _callbacks.onTrackAdded, _callbacks.onStreamRemoved);
 
-                        // Store off the stream reference so we can share it later
-                        _mediaStream = stream;
-                        STes["1"] = _mediaStream;
+                // Store off the stream reference so we can share it later
+                // _mediaStream = stream;
+                STes["1"] = _mediaStream;
 
-                        _index = "1";
-                        // Load the stream into a video element so it starts playing in the UI
-                        console.log('playing my local video feed');
-                        var videoElement = document.querySelector('.video.mine');
-                        attachMediaStream(videoElement, STes["1"]);
+                _index = "1";
+                // Load the stream into a video element so it starts playing in the UI
+                // console.log('playing my local video feed');
+                // var videoElement = document.querySelector('.video.mine');
+                // attachMediaStream(videoElement, STes["1"]);
 
-                        // Hook up the UI
-                        _attachUiHandlers();
+                // Hook up the UI
+                _attachUiHandlers();
 
-                        viewModel.Loading(false);
-                    }, function (event) {
-                        alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
-                        viewModel.Loading(false);
-                    });
-                },
-                function (error) { // error callback
-                    alertify.alert('<h4>Failed to get hardware access!</h4> Do you have another browser type open and using your cam/mic?<br/><br/>You were not connected to the server, because I didn\'t code to make browsers without media access work well. <br/><br/>Actual Error: ' + JSON.stringify(error));
-                    viewModel.Loading(false);
-                }
-            );
+                viewModel.Loading(false);
+            }, function (event) {
+                alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
+                viewModel.Loading(false);
+            });
+
+            //getUserMedia(
+            //    {
+            //        // Permissions to request
+            //        video: true,
+            //        audio: true
+            //    },
+            //    function (stream) { // succcess callback gives us a media stream
+            //       // var audioTrack = stream.getAudioTracks()[0];
+                   
+            //    },
+            //    function (error) { // error callback
+            //        alertify.alert('<h4>Failed to get hardware access!</h4> Do you have another browser type open and using your cam/mic?<br/><br/>You were not connected to the server, because I didn\'t code to make browsers without media access work well. <br/><br/>Actual Error: ' + JSON.stringify(error));
+            //        viewModel.Loading(false);
+            //    }
+            //);
         },
 
         _attachUiHandlers = function () {
+            $(".mycamera").click(function () {
+                var x = document.getElementById("cameraSection");
+                if (x.style.display === "none") {
+                    $("#cameraSection").slideDown();
+                    // x.style.display = "block";
+                } else {
+                    $("#cameraSection").slideUp();
+                    // x.style.display = "none";
+                }
+            })
             // Add click handler to users in the "Users" pane
             $(".transmit").click(function () {
                 if (_noMoreConnection == "") {
@@ -358,7 +429,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     //روش دوم
                     _RequestedStream = 'video';
                     connectionManager.sendSignal(targetConnectionId, _RequestedStream);
-
+                    $("#" + targetConnectionId).parent(".span4").css("display", "block");
                     //// روش اول
                     ////hang up first
                     //_hub.server.hangUp(targetConnectionId);
@@ -378,7 +449,22 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
             });
-            $('.user i').live('click', function () {
+            $('.user p.oneWay').live('click', function () {
+
+
+                var targetConnectionId = $(this).attr('data-cid');
+                if (targetConnectionId != viewModel.MyConnectionId()) {
+                    //روش دوم
+                    _RequestedStream = 'blank';
+                    connectionManager.sendSignal(targetConnectionId, _RequestedStream);
+                    $("#" + targetConnectionId).parent(".span4").css("display", "none");
+                   
+                } else {
+                    alertify.error("Ah, nope.  Can't call yourself.");
+                }
+            });
+            
+            $('.user p.userHangup').live('click', function () {
                 var targetConnectionId = $(this).attr('data-cid');
 
                 if (targetConnectionId != viewModel.MyConnectionId()) {
@@ -387,6 +473,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     // _hub.revoke('HangUp', targetCo/
                     connectionManager.closeConnection(targetConnectionId);
                     viewModel.Mode('idle');
+                    $("#" + targetConnectionId).parent(".span4").css("display", "none");
 
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
@@ -405,7 +492,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Then make sure we aren't calling ourselves.
                 if (targetConnectionId != viewModel.MyConnectionId()) {
                     // Initiate a call
-                    _RequestedStream = 'blank';
+                    _RequestedStream = 'video';
                     _hub.server.callUser(targetConnectionId, "");// 
                     console.log("callUser", "");
                     // UI in calling mode
@@ -531,14 +618,14 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             //})
         },
         _setName = function (name) {
-            viewModel.Username(name);
+            viewModel.Groupname(name);
         },
         _resetStream = function (id) {
 
 
             var hub = $.connection.chatHub;
             console.log(id);
-            connectionManager.changeTrack([STes["1"], STes[id]], id);
+            connectionManager.changeTrack([STes[id]], id);
             //if (id == "0") {
             //    connectionManager.changeTrack([ STes["0"], STes["1"]], id);
 
@@ -647,6 +734,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 if (ListOfVideo == null) {
                     const div = document.createElement('div');
                     div.className = 'span4';
+                    div.style.display = 'none';
+                   
                     div.innerHTML = ` <video controls style="max-height:150px" id='` + partnerClientId + `' class='video partner cool-background' autoplay='autoplay' onclick='changeStream(this.id)' ></video>  `;
 
 
@@ -655,10 +744,18 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     var vid = document.getElementById(partnerClientId);
                     attachMediaStream(vid, event.stream);
                     STes[partnerClientId] = event.stream;
+
                 }
                 else {
                     attachMediaStream(ListOfVideo, event.stream);
                     STes[partnerClientId] = event.stream;
+                }
+                if (_RequestedStream == 'video') {
+                    connectionManager.sendSignal(partnerClientId, _RequestedStream);
+                    $("#" + partnerClientId).parent(".span4").css("display", "block");
+                    _RequestedStream == 'blank';
+
+                   // partnerClientId
                 }
 
                 

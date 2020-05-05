@@ -10,6 +10,8 @@ WebRtcDemo.ViewModel = (function () {
         Users: ko.mapping.fromJS([]), // List of users that are logged in and ready for connections
         Username: ko.observable('not logged in.'), // My username, to be reflected in UI
         MyConnectionId: ko.observable(''), // My connection Id, so I can tell who I am
+        guestConnectionId: ko.observable(''), // My connection Id, so I can tell who I am
+        Groupname: ko.observable(''), // My connection Id, so I can tell who I am
         Mode: ko.observable('idle'), // UI mode ['idle', 'calling', 'incall']
         Loading: ko.observable(false) // Loading indicator control
     };

@@ -146,9 +146,12 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Close all of our connections
-        _closeAllConnections = function () {
+        _closeAllConnections = function (guestConnectionId) {
             for (var connectionId in _connections) {
-                _closeConnection(connectionId);
+                if (connectionId != guestConnectionId) {
+                    _closeConnection(connectionId);
+                }
+                
             }
         },
 

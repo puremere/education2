@@ -29,9 +29,67 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    <script>
+
+        var imageAddr = "https://stream.sup-ect.ir/img/test.jpg";
+        var downloadSize = 3788800; //bytes
+        function ShowProgressMessage(msg) {
+            if (console) {
+                if (typeof msg == "string") {
+                    console.log(msg);
+                } else {
+                    for (var i = 0; i < msg.length; i++) {
+                        console.log(msg[i]);
+                    }
+                }
+            }
+            var oProgress = document.getElementById("progress");
+            if (oProgress) {
+                var actualHTML = (typeof msg == "string") ? msg : msg.join("<br />");
+                oProgress.innerHTML = actualHTML;
+            }
+        }
+        function InitiateSpeedDetection() {
+            ShowProgressMessage("Loading the image, please wait...");
+            window.setTimeout(MeasureConnectionSpeed, 1);
+        };
+        if (window.addEventListener) {
+            window.addEventListener('load', InitiateSpeedDetection, false);
+        } else if (window.attachEvent) {
+            window.attachEvent('onload', InitiateSpeedDetection);
+        }
+        function MeasureConnectionSpeed() {
+            var startTime, endTime;
+            var download = new Image();
+            download.onload = function () {
+                endTime = (new Date()).getTime();
+                showResults();
+            }
+            download.onerror = function (err, msg) {
+                ShowProgressMessage("Invalid image, or error downloading");
+            }
+            startTime = (new Date()).getTime();
+            var cacheBuster = "?nnn=" + startTime;
+            download.src = imageAddr + cacheBuster;
+            function showResults() {
+                var duration = (endTime - startTime) / 1000;
+                var bitsLoaded = downloadSize * 8;
+                var speedBps = (bitsLoaded / duration).toFixed(2);
+                var speedKbps = (speedBps / 1024).toFixed(0);
+                var speedMbps = (speedKbps / 1024).toFixed(2);
+                ShowProgressMessage([
+                    "Your connection speed is:",
+                    speedBps + " bps",
+                    speedKbps + " kbps",
+                    speedMbps + " Mbps"
+                ]);
+            }
+        }
+    </script>
 </head>
 
 <body data-bind="attr: { 'data-mode': Mode }">
+   
     <!-- Invalid browser alert, and reminder to enable media things -->
     <div class="container-fluid" style="position:absolute; padding:0">
         <div class="row-fluid instructions">
@@ -47,16 +105,21 @@
         </div>
     </div>
     <!-- Top Bar -->
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0px;position: relative;">
         <div class="navbar-inner">
-            <div class="container-fluid" style="display:flex;padding:0">
-                <a class="brand pull-left" href="#">mereskype</a>
+            <div class="container-fluid" style="display:flex;padding:0; ">
+
                 <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
                 <span style="margin:10px auto; ">
                     <button style=" display:none;border-radius:10px;" class="btn btn-danger hangup">قطع تماس </button>
-                    <button style=" display:inline-block; border-radius:10px; " class="btn btn-success requst">درخواست اسکرین</button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success requst">درخواست اسکرین</button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success chat">گفتگو </button>
+                    <button style=" display:inline-block; border-radius:10px;outline:none " class="btn btn-success mycamera"><i class="fa fa-video-camera"></i> </button>
+
 
                 </span>
+
+
 
                 <div class="nav-collapse collapse">
                     <p class="navbar-text pull-right">
@@ -64,10 +127,19 @@
                     </p>
                 </div>
             </div>
+            <div id="cameraSection" class="container-fluid " style="display:none;padding:10px;">
+                <div class="select" style="margin:10px" >
+                    <label for="audioSource" style="color:white; margin:10px; direction:rtl; float:right">صدا :</label><select id="audioSource" class="form-control"></select>
+                </div>
+
+                <div class="select"  style="margin:10px" >
+                    <label for="videoSource" style="color:white; margin:10px; direction:rtl; float:right"> تصویر : </label><select id="videoSource" class="form-control"></select>
+                </div>
+            </div>
         </div>
     </div>
     <!-- App Area -->
- 
+
     <div class="" style="text-align:right; width:100%; ">
         <div class="">
             <!-- Side Bar -->
@@ -101,20 +173,20 @@
                         <video controls style="width:100%;" id="1" class="video mine cool-background" autoplay="autoplay" muted></video>
                         <audio style="display:none" controls autoplay class="audio mine"></audio>
                     </div>
-                    <div class="mineholderScreenAfter">
+                    @*<div class="mineholderScreenAfter">
                         <video controls style=" width:100%;" id="0" class="video screen cool-background" autoplay="autoplay" muted></video>
 
-                    </div>
+                    </div>*@
                     <div class="partnerholder" style=" ">
                         <video controls class="video partner cool-background" autoplay="autoplay"></video>
 
 
                     </div>
-                    <div class="partnerholder2">
+                    @*<div class="partnerholder2">
                         <video controls class="video partner2 cool-background" autoplay="autoplay"></video>
 
-                    </div>
-                    
+                    </div>*@
+
 
 
 
@@ -125,47 +197,47 @@
                         <div class="content">
                             <div class="contact-profile">
                                 <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                <p>@Session["name"]</p>
+                                <p id="chatname"></p>
                                 @*<div class="social-media">
-                                    <i class="fa fa-facebook" aria-hidden="true"></i>
-                                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                                    <i class="fa fa-instagram" aria-hidden="true"></i>
-                                </div>*@
+                                        <i class="fa fa-facebook" aria-hidden="true"></i>
+                                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                                    </div>*@
                             </div>
                             <div class="messages" style="">
                                 <ul>
                                     @*<li class="sent">
-                                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                                        <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
-                                    </li>
-                                    <li class="replies">
-                                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                        <p>When you're backed against the wall, break the god damn thing down.</p>
-                                    </li>
-                                    <li class="replies">
-                                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                        <p>Excuses don't win championships.</p>
-                                    </li>
-                                    <li class="sent">
-                                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                                        <p>Oh yeah, did Michael Jordan tell you that?</p>
-                                    </li>
-                                    <li class="replies">
-                                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                        <p>No, I told him that.</p>
-                                    </li>
-                                    <li class="replies">
-                                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                        <p>What are your choices when someone puts a gun to your head?</p>
-                                    </li>
-                                    <li class="sent">
-                                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                                        <p>What are you talking about? You do what they say or they shoot you.</p>
-                                    </li>
-                                    <li class="replies">
-                                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                                        <p>Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
-                                    </li>*@
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>When you're backed against the wall, break the god damn thing down.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>Excuses don't win championships.</p>
+                                        </li>
+                                        <li class="sent">
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>Oh yeah, did Michael Jordan tell you that?</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>No, I told him that.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>What are your choices when someone puts a gun to your head?</p>
+                                        </li>
+                                        <li class="sent">
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>What are you talking about? You do what they say or they shoot you.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
+                                        </li>*@
                                 </ul>
                             </div>
                             <div class="message-input">
@@ -214,6 +286,7 @@
 
     <script>
         WebRtcDemo.App.setName('@Session["name"]');
+     
     </script>
     <!-- Analytics -->
     <script type="text/javascript">

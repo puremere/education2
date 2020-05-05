@@ -38,7 +38,7 @@
 
 <body data-bind="attr: { 'data-mode': Mode }" style="text-align:right"> 
     <!-- Invalid browser alert, and reminder to enable media things -->
-    <div class="container-fluid">
+    @*<div class="container-fluid">
         <div class="row-fluid instructions">
             <div class="span12">
                 <div class="alert"><h4>توجه!</h4> مرورگر مجوز وب کم و میکرفون را لازم دارد  <strong>امکانات سایت تنها با ارائه مجوز از طرف شما قابل ارائه می باشد</strong>.</div>
@@ -50,20 +50,46 @@
                 <div class="alert alert-error"><h4>شما باید از آخرین نسخه مرورگر کروم یا فایر فاکس استفاده کنید</h4>  <a href="https://nightly.mozilla.org/">آخرین نسخه فایرفاکس</a>، <a href="https://www.google.com/intl/en/chrome/browser/beta.html">آخرین نسخه کروم</a> </div>
             </div>
         </div>
-    </div>
+    </div>*@
     <!-- Top Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top" style="position:relative">
         <div class="navbar-inner">
-            <div class="container-fluid">
-                <a class="brand pull-left" href="#">mereskype</a>
-                <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
+            <div class="container-fluid" style="display:flex">
+
+                @*<span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>*@
                 <span style="margin:10px auto; ">
-                    <button style=" display:inline-block; border-radius:10px; " class="btn btn-success transmit">انتقال تصویر</button>
+                    <button style="  " class="btn btn-success transmit">انتقال تصویر</button>
+                    <i id="pwd_spn" style="display:none; color:white; margin-top:10px">https://lecture.sup-ect.ir/screen/userface?groupname=<span data-bind="text:  Groupname"></span></i>
+                    <button id="cp_btn" class="btn btn-success">آدرس اتصال</button>
+                    <button style=" display:inline-block; border-radius:10px;outline:none " class="btn btn-success mycamera"><i class="fa fa-video-camera"></i> </button>
+
+                    <script>
+                        document.getElementById("cp_btn").addEventListener("click", copy_password);
+                        function copy_password() {
+                            var copyText = document.getElementById("pwd_spn");
+                            var textArea = document.createElement("textarea");
+                            textArea.value = copyText.textContent;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("Copy");
+                            textArea.remove();
+                            alertify.success("آدرس اتصال کاربر کپی شد");
+                        }
+                    </script>
                 </span>
-                <div class="nav-collapse collapse">
+                <div class="">
                     <p class="navbar-text pull-right">
-                        نام گروه:  <span data-bind="text:  Groupname"></span>
+
                     </p>
+                </div>
+            </div>
+            <div id="cameraSection" class="container-fluid " style="display:none;padding:10px;">
+                <div class="select" style="margin:0px">
+                    <label for="audioSource" style="width:100%; color:white; margin:10px; direction:rtl; float:right;width:100%;">صدا :</label><select id="audioSource" class="form-control" style="width:100%;"></select>
+                </div>
+
+                <div class="select" style="margin:0px">
+                    <label for="videoSource" style="width:100%;color:white; margin:10px; direction:rtl; float:right"> تصویر : </label><select id="videoSource" class="form-control" style="width:100%;"></select>
                 </div>
             </div>
         </div>
@@ -74,10 +100,10 @@
             <!-- Side Bar -->
             <div class="span4" style="padding:10px 0; margin-top:15px">
                 <!-- In Call Actions -->
-                <div class="well actions">
+                @*<div class="well actions">
                     <div class="status" data-bind="text: CallStatus"></div>
                     <button class="btn btn-danger hangup">قطع</button>
-                </div>
+                </div>*@
                 <!-- User List -->
                 <div class="well user-list" style="position:relative">
                     <i style="position:absolute; top:10px ; left :10px ;" id="refresh" class="fa fa-refresh"></i>
@@ -85,14 +111,21 @@
                         <li class="nav-header">کاربران آنلاین <small data-bind="text: Users().length"></small></li>
                         <!-- ko foreach: Users -->
                         <li class="user">
-                            <i data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-danger" style="display:inline-block; float:right">قطع</i>
-                            <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-success screen" style="display:inline-block; float:right">اسکرین</p>
-                            <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-success webcam" style="display:inline-block; float:right">وب کم</p>
-                            <a data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" href="#" style="width:80%; display:inline-block">
-                                <!-- only using an a here for bootstrap styling -->
-                                <div class="username" data-bind="text: Username"></div>
-                                <div class="helper" data-bind="css: $parent.getUserStatus($data)"></div>
-                            </a>
+                            <div class="row" style="margin-bottom:10px">
+                                <a data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" href="#" style="width:80%; display:inline-block; padding:10px 0px 5px 10px">
+                                    <!-- only using an a here for bootstrap styling -->
+                                    <div class="username" data-bind="text: Username"></div>
+                                </a>
+                                <div class="row">
+                                    <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-danger userHangup" style="display:inline-block; float:right; margin-left:10px">قطع</p>
+                                    <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-success oneWay" style="display:inline-block; float:right;margin-left:10px">یک طرفه</p>
+                                    <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-success screen" style="display:inline-block; float:right;margin-left:10px">اسکرین</p>
+                                    <p data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }" class="btn btn-success webcam" style="display:inline-block; float:right;margin-left:10px">وب کم</p>
+
+                                </div>
+                                
+                            </div>
+                           
                         </li>
                         <!-- /ko -->
                     </ul>
@@ -153,9 +186,7 @@
                                     <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
                                     <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
                                     <input type="file" id="upload" hidden/>
-                                    <script>
-                                        
-                                    </script>
+                                   
                                 </div>
                             </div>
                         </div>
@@ -167,11 +198,11 @@
                 <div id="videoHolder" class="row-fluid">
 
                     <div class="span4">
-                        <h5>اسکرین شما</h5>
+                       
                         <video style="max-height:150px" id="0" class="video screen cool-background" autoplay="autoplay" onclick="changeStream(this.id)"></video>
                     </div>
                     <div class="span4">
-                        <h5>شما</h5>
+                  
                         <video controls style="max-height:150px" id="1" class="video mine cool-background" autoplay="autoplay" onclick="changeStream(this.id)"></video>
                     </div>
 

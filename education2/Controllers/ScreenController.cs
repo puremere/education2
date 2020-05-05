@@ -29,17 +29,22 @@ namespace education2.Controllers
                
             return View();
         }
-        public ActionResult TeacherFace(string username)
+        public ActionResult TeacherFace(string groupname)
         {
 
 
-            Session["name"] = username;
+            Session["name"] = groupname;
             return View();
         }
-        public ActionResult UserFace(string username)
+        public ActionResult UserFace(string  groupname)
         {
 
-            Session["name"] = username;
+            Session["name"] = groupname;
+            return View();
+        }
+        public ActionResult relay(string groupname)
+        {
+            Session["name"] = groupname;
             return View();
         }
         //[HttpPost]
@@ -68,6 +73,6 @@ namespace education2.Controllers
         //    catch { }
         //    return Json(Status);
         //}
-       
+
     }
 }

@@ -77,9 +77,12 @@
 		        transform: translate(300px, 0);
 		opacity: 0;
 	}
-	.alertify-dialog {
-		padding: 25px;
-	}
+.alertify-message{
+    margin-bottom:20px
+}
+.alertify-dialog {
+    padding: 20px;
+}
 		.alertify-resetFocus {
 			border: 0;
 			clip: rect(0 0 0 0);

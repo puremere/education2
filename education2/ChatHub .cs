@@ -180,17 +180,20 @@ namespace education2
            // SendUserListUpdate("");
         }
 
-        public void callEveryOne()
+        public void callEveryOne(string GeustConnectionID)
         {
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
-                List<User> UserList = Users.Where(x => x.GroupName == user.GroupName && x.ConnectionId != user.ConnectionId).ToList();
+                List<User> UserList = Users.Where(x => x.GroupName == user.GroupName && x.ConnectionId != user.ConnectionId && x.ConnectionId != GeustConnectionID ).ToList();
+                
                 foreach ( User guest in UserList )
                 {
                     Clients.Client(guest.ConnectionId).callEveryOne(user.ConnectionId);
-
+                   
                 }
+                //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
+                //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
 
             }
         }

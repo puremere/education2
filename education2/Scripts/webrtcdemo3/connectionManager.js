@@ -12,21 +12,27 @@ WebRTC API has been normalized using 'adapter.js'
 ************************************************/
 WebRtcDemo.ConnectionManager = (function () {
     var _signaler,
-        _connections = {},
-        _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
-
+        _connections = {}, 
+       // _iceServers = [{ url:  'stun:74.125.142.127:19302' }], // stun.l.google.com - Firefox does not support DNS names.
+        _iceServers = [{ url: 'stun:74.125.142.127:19302' },{
+            url: 'turn:numb.viagenie.ca',
+            credential: 'muazkh',
+            username: 'webrtc@live.com'
+        }],
         /* Callbacks */
         _onReadyForStreamCallback = function () { console.log('UNIMPLEMENTED: _onReadyForStreamCallback'); },
         _onStreamAddedCallback = function () { console.log('UNIMPLEMENTED: _onStreamAddedCallback'); },
         _onStreamRemovedCallback = function () { console.log('UNIMPLEMENTED: _onStreamRemovedCallback'); },
+        _onTrackAddedCallback = function () { console.log('UNIMPLEMENTED: _onTrackAddedCallback'); },
 
         // Initialize the ConnectionManager with a signaler and callbacks to handle events
-        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved) {
+        _initialize = function (signaler, onReadyForStream, onStreamAdded, onStreamRemoved, onTrackAdded) {
             _signaler = signaler;
 
             _onReadyForStreamCallback = onReadyForStream || _onReadyForStreamCallback;
             _onStreamAddedCallback = onStreamAdded || _onStreamAddedCallback;
-            _onStreamRemovedCallback = onStreamRemoved || _onStreamRemovedCallback;
+            _onStreamRemovedCallback = onStreamRemoved || _onStreamRemovedCallback
+            _onTrackAddedCallback = onTrackAdded || _onTrackAddedCallback;
         },
 
         // Create a new WebRTC Peer Connection with the given partner
@@ -75,6 +81,11 @@ WebRtcDemo.ConnectionManager = (function () {
                 // A stream was removed
                 _onStreamRemovedCallback(connection, event.stream.id);
             };
+            connection.ontrack = function (event) {
+                console.log('WebRTC: adding track');
+                _onTrackAddedCallback(connection, event);
+
+            }
 
             // Store away the connection
             _connections[partnerClientId] = connection;
@@ -135,9 +146,12 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Close all of our connections
-        _closeAllConnections = function () {
+        _closeAllConnections = function (guestConnectionId) {
             for (var connectionId in _connections) {
-                _closeConnection(connectionId);
+                if (connectionId != guestConnectionId) {
+                    _closeConnection(connectionId);
+                }
+                
             }
         },
 
@@ -157,22 +171,99 @@ WebRtcDemo.ConnectionManager = (function () {
         },
 
         // Send an offer for audio/video
-        _initiateOffer = function (partnerClientId, stream) {
+        _initiateOffer = function (partnerClientId, STES) {
+
+          
             // Get a connection for the given partner
-         
             var connection = _getConnection(partnerClientId);
 
             // Add our audio/video stream
-            connection.addStream(stream);
+           // connection.addStream(stream);
+            var st1 = new MediaStream();
+            var st2 = new MediaStream();
+
+            for (const stream of STES) {
+                stream.getTracks().forEach(function (track) {
+
+                    _sender = connection.addTrack(track, st1);
+                });
+            };
           
-           
             // Send an offer for a connection
             connection.createOffer(function (desc) {
                 connection.setLocalDescription(desc, function () {
                     _signaler.sendSignal(JSON.stringify({ "sdp": connection.localDescription }), partnerClientId);
                 });
             }, function (error) { alert('Error creating session description: ' + error); });
-        };
+        },
+        _sendSignal = function (partnerClientId, signal) {
+
+
+            _signaler.sendSignalForStream(signal, partnerClientId);
+        },
+        _changeTrack = function (STES, selectedID) {
+            for (var connectionId in _connections) {
+                if (connectionId == selectedID) {
+                
+                    
+                    connection = _connections[connectionId];
+                    var st1 = new MediaStream();
+                    var st2 = new MediaStream();
+                    for (const stream of STES) {
+                        stream.getTracks().forEach(function (track) {
+
+                            st2.addTrack(track);
+                        });
+                    };
+
+                    //connection.getSenders().map(sender =>
+                    //    sender.replaceTrack((sender.track.kind == "audio")? newStream.getAudioTracks()[0]: nowVideo));
+
+                    // روش دوم
+                    var i = 0;
+                    var j = 0
+                    for (const sender of connection.getSenders()) {
+                        if (sender.track != null) {
+                            if (sender.track.kind == "audio") {
+                                if (st2.getAudioTracks()[i] != null) {
+                                    sender.replaceTrack(st2.getAudioTracks()[i]);
+                                    i += 1;
+                                }
+
+                            } else {
+                                if (st2.getVideoTracks()[j] != null) {
+                                    sender.replaceTrack(st2.getVideoTracks()[j]);
+                                    j += 1;
+                                }
+
+                            }
+                        }
+                        
+
+
+                    }
+                    console.log("track change by client");
+
+                    //connection = _connections[connectionId];
+                    //var st1 = new MediaStream();
+                    //Promise.all(pc1.getSenders().map(sender =>
+                    //    sender.replaceTrack((sender.track.kind == "audio") ?
+                    //        newStream.getAudioTracks()[0] :
+                    //        newStream.getVideoTracks()[0])))
+                    //    .then(() => log("Flip!"))
+                    //    .catch(failed);
+
+
+                }
+
+
+            }
+
+
+
+
+
+        }
 
     // Return our exposed API
     return {
@@ -180,6 +271,8 @@ WebRtcDemo.ConnectionManager = (function () {
         newSignal: _newSignal,
         closeConnection: _closeConnection,
         closeAllConnections: _closeAllConnections,
-        initiateOffer: _initiateOffer
+        initiateOffer: _initiateOffer,
+        changeTrack: _changeTrack,
+        sendSignal: _sendSignal
     };
 })();

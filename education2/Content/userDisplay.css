@@ -35,20 +35,20 @@
 }
 
 #vidoeHolder{
-    width:70%;
+    width:100%;
     display:inline-block; position:relative; overflow:hidden
 }
 #chatHolder {
-    width: 30%;
+    width: 0%;
     display: inline-block;
 }
 #BothContainer {
-    margin-top: 50px;
+   
     display: flex;
 }
 .partnerholder {
     display: block;
-    width: 50%;
+    width: 100%;
     height: 100%;
     position: absolute;
     left: 0px;
@@ -66,7 +66,14 @@
     z-index:99999
 }
 @media only screen and (max-width: 800px) {
-    #BothContainer {
+    .content{
+        display:none;
+    }
+    .mineholderAfter {
+     
+        width:120px
+    }
+    /*#BothContainer {
         margin-top: 50px;
         display: block;
     }
@@ -100,6 +107,6 @@
     }
     .video partner{
         
-    }
+    }*/
 }
 
