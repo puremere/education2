@@ -387,6 +387,9 @@
     <Content Include="Scripts\webrtcdemo2\viewModel.js" />
     <Content Include="Scripts\webrtcdemo3\connectionManager.js" />
     <Content Include="Scripts\webrtcdemo3\viewModel.js" />
+    <Content Include="Scripts\webrtcdemo4\app.js" />
+    <Content Include="Scripts\webrtcdemo4\connectionManager.js" />
+    <Content Include="Scripts\webrtcdemo4\viewModel.js" />
     <Content Include="Scripts\webrtcdemo\app.js" />
     <Content Include="Scripts\webrtcdemo3\app.js" />
     <Content Include="Scripts\webrtcdemo\connectionManager.js" />
@@ -417,6 +420,7 @@
     <Content Include="Views\Screen\UserFace.cshtml" />
     <Content Include="Views\CustomLogin\Index.cshtml" />
     <Content Include="Views\User\chat.cshtml" />
+    <Content Include="Views\Screen\relay.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

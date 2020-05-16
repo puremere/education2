@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using education2.Models;
+using System.Net;
+using System.IO;
 
 namespace education2
 {
@@ -80,6 +82,12 @@ namespace education2
 
             return base.OnDisconnected(boolian);
         }
+        public void DeleteRelayFromList()
+        {
+            Users.RemoveAll(u => u.Username == "relay");
+            string Groupname = Users.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId).GroupName;
+            SendUserListUpdate(Groupname);
+        }
 
         public void CallUser(string targetConnectionId,string type)
         {
@@ -113,6 +121,41 @@ namespace education2
                 Caller = callingUser,
                 Callee = targetUser
             });
+        }
+        public void SendRelay()
+        {
+            string html = string.Empty;
+            string url = @"http://localhost:8082/openChrome?groupname=123";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+            }
+            var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+            Clients.Client(Context.ConnectionId).relayCallBack(html.Replace("portis", ""));
+           
+        }
+        public void KillRelay(string id)
+        {
+            string html = string.Empty;
+            string url = @"http://localhost:8083/closeChrome?id="+ id;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+            }
+            var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+            Clients.Client(Context.ConnectionId).relayCallBack(html.Replace("portis", ""));
         }
         public void RefreshUser() {
             string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
@@ -208,7 +251,7 @@ namespace education2
             if (user != null)
             {
                 User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
-                Clients.Client(connectionID).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username));
+                Clients.Client(connectionID).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
 
 
             }

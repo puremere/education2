@@ -1,0 +1,250 @@
+﻿@{
+    ViewBag.Title = "WebRTC Video Caller";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>WebRTC Video Caller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Styles -->
+    <link href="/Content/icomoon/style.css" rel="stylesheet" />
+    <link href="/Content/Site.css" rel="stylesheet" />
+
+    <link href="~/Content/bootstrap.css" rel="stylesheet" />
+    <link href="/Content/alertify/alertify.core.css" rel="stylesheet" />
+    <link href="/Content/alertify/alertify.default.css" rel="stylesheet" />
+
+    <link href="~/Content/userDisplay.css" rel="stylesheet" />
+
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css'>
+    <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css'>
+    <link href="~/Content/chatStyle.css" rel="stylesheet" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+</head>
+
+<body data-bind="attr: { 'data-mode': Mode }">
+
+    <!-- Invalid browser alert, and reminder to enable media things -->
+    <div class="container-fluid" style="position:absolute; padding:0">
+        <div class="row-fluid instructions">
+            <div class="span12" style="text-align:center">
+                <div class="alert"><h4>توجه!</h4> مرورگر مجوز وب کم و میکرفون را لازم دارد  <strong>امکانات سایت تنها با ارائه مجوز از طرف شما قابل ارائه می باشد</strong>.</div>
+            </div>
+        </div>
+        <div class="row-fluid browser-warning">
+            <div class="span12">
+                <div class="alert alert-error"><h4>شما باید از آخرین نسخه مرورگر کروم یا فایر فاکس استفاده کنید</h4>  <a href="https://nightly.mozilla.org/">آخرین نسخه فایرفاکس</a>، <a href="https://www.google.com/intl/en/chrome/browser/beta.html">آخرین نسخه کروم</a> </div>
+                <div class="alert alert-error"><h4>شما باید از آخرین نسخه مرورگر کروم یا فایر فاکس استفاده کنید</h4>  <a href="https://nightly.mozilla.org/">آخرین نسخه فایرفاکس</a>، <a href="https://www.google.com/intl/en/chrome/browser/beta.html">آخرین نسخه کروم</a> </div>
+            </div>
+        </div>
+    </div>
+    <!-- Top Bar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0px;position: relative;">
+        <div class="navbar-inner">
+            <div class="container-fluid" style="display:flex;padding:0; ">
+
+                <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
+                <span style="margin:10px auto; ">
+                    <button style=" display:none;border-radius:10px;" class="btn btn-danger hangup">قطع تماس </button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success requst" id="requst">درخواست اسکرین</button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success chat">گفتگو </button>
+                    <button style=" display:inline-block; border-radius:10px;outline:none " class="btn btn-success mycamera"><i class="fa fa-video-camera"></i> </button>
+
+
+                </span>
+
+
+
+                <div class="nav-collapse collapse">
+                    <p class="navbar-text pull-right">
+                        نام شما:  <span data-bind="text:  Username"></span>
+                    </p>
+                </div>
+            </div>
+            <div id="cameraSection" class="container-fluid " style="display:none;padding:10px;">
+                <div class="select" style="margin:10px">
+                    <label for="audioSource" style="color:white; margin:10px; direction:rtl; float:right">صدا :</label><select id="audioSource" class="form-control"></select>
+                </div>
+
+                <div class="select" style="margin:10px">
+                    <label for="videoSource" style="color:white; margin:10px; direction:rtl; float:right"> تصویر : </label><select id="videoSource" class="form-control"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- App Area -->
+
+    <div class="" style="text-align:right; width:100%; ">
+        <div class="">
+            <!-- Side Bar -->
+            @*<div class="span3">
+                    <!-- In Call Actions -->
+                    <div class="well actions">
+                        <div class="status" data-bind="text: CallStatus"></div>
+                        <button class="btn btn-danger hangup">قطع</button>
+                    </div>
+                    <!-- User List -->
+                    <div class="well user-list">
+                        <ul class="nav nav-list">
+                            <li class="nav-header">کاربران آنلاین <small data-bind="text: Users().length"></small></li>
+                            <!-- ko foreach: Users -->
+                            <li class="user" data-bind="attr: { 'data-cid': ConnectionId, 'title': Username }">
+                                <a href="#">
+                                    <!-- only using an a here for bootstrap styling -->
+                                    <div class="username" data-bind="text: Username"></div>
+                                    <div class="helper" data-bind="css: $parent.getUserStatus($data)"></div>
+                                </a>
+                            </li>
+                            <!-- /ko -->
+                        </ul>
+                    </div>
+                </div>*@
+            <!-- Videos -->
+            <div id="BothContainer" class="" style="">
+                <div id="vidoeHolder" class="" style="">
+
+                    <div class="mineholderAfter" style="">
+                        <video controls style="width:100%;" id="1" class="video mine cool-background" autoplay="autoplay" muted></video>
+                        <audio style="display:none" controls autoplay class="audio mine"></audio>
+                    </div>
+                    @*<div class="mineholderScreenAfter">
+                            <video controls style=" width:100%;" id="0" class="video screen cool-background" autoplay="autoplay" muted></video>
+
+                        </div>*@
+                    <div class="partnerholder" style=" ">
+                        <video id="videoPartner" controls class="video partner cool-background" autoplay="autoplay"></video>
+
+
+                    </div>
+                    @*<div class="partnerholder2">
+                            <video controls class="video partner2 cool-background" autoplay="autoplay"></video>
+
+                        </div>*@
+
+
+
+
+                </div>
+                <div id="chatHolder">
+                    <div id="frame">
+
+                        <div class="content">
+                            <div class="contact-profile">
+                                <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                <p id="chatname"></p>
+                                @*<div class="social-media">
+                                        <i class="fa fa-facebook" aria-hidden="true"></i>
+                                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                                    </div>*@
+                            </div>
+                            <div class="messages" style="">
+                                <ul>
+                                    @*<li class="sent">
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>When you're backed against the wall, break the god damn thing down.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>Excuses don't win championships.</p>
+                                        </li>
+                                        <li class="sent">
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>Oh yeah, did Michael Jordan tell you that?</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>No, I told him that.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>What are your choices when someone puts a gun to your head?</p>
+                                        </li>
+                                        <li class="sent">
+                                            <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                                            <p>What are you talking about? You do what they say or they shoot you.</p>
+                                        </li>
+                                        <li class="replies">
+                                            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                                            <p>Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
+                                        </li>*@
+                                </ul>
+                            </div>
+                            <div class="message-input">
+                                <div class="wrap">
+                                    <input id="chatMessage" type="text" placeholder="Write your message..." />
+                                    <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
+                                    <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Footer -->
+        <hr>
+
+    </div>
+
+
+    <!-- Libs -->
+    <script src="/Scripts/adapter.js"></script>
+    <script src="/Scripts/jquery-1.7.1.js"></script>
+    <script src="/Scripts/knockout-2.2.1.js"></script>
+    <script src="/Scripts/knockout.mapping-latest.js"></script>
+    <script src="/Scripts/alertify.min.js"></script>
+    <script src="/Content/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    @*<script>
+            $(function () {
+                alert("aaa");
+                var chat = $.connection.chatHub;
+                alert("nnn");
+
+            })
+
+        </script>*@
+    <!-- App JS -->
+
+    <script src="/Scripts/webrtcdemo2/viewModel.js"></script>
+    <script src="/Scripts/webrtcdemo2/connectionManager.js"></script>
+    <script src="/Scripts/webrtcdemo3/app.js"></script>
+
+    <script>
+        WebRtcDemo.App.setName('@Session["name"]');
+
+
+    </script>
+   
+    <!-- Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-38670464-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+</body>
+</html>

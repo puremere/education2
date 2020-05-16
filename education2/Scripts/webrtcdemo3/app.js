@@ -1,4 +1,65 @@
-﻿var imageAddr = "https://stream.sup-ect.ir/img/test.jpg";
+﻿var videoElement = document.querySelector('.video.mine');
+var audioSelect = document.querySelector('select#audioSource');
+var videoSelect = document.querySelector('select#videoSource');
+var _mediaStream;
+audioSelect.onchange = getStream;
+videoSelect.onchange = getStream;
+
+//getStream().then(getDevices).then(gotDevices);
+
+function getDevices() {
+    // AFAICT in Safari this only gets default devices until gUM is called :/
+    return navigator.mediaDevices.enumerateDevices();
+}
+
+function gotDevices(deviceInfos) {
+    window.deviceInfos = deviceInfos; // make available to console
+    console.log('Available input and output devices:', deviceInfos);
+    for (const deviceInfo of deviceInfos) {
+        const option = document.createElement('option');
+        option.value = deviceInfo.deviceId;
+        if (deviceInfo.kind === 'audioinput') {
+            option.text = deviceInfo.label || `Microphone ${audioSelect.length + 1}`;
+            audioSelect.appendChild(option);
+        } else if (deviceInfo.kind === 'videoinput') {
+            option.text = deviceInfo.label || `Camera ${videoSelect.length + 1}`;
+            videoSelect.appendChild(option);
+        }
+    }
+}
+
+function getStream() {
+    if (window.stream) {
+        window.stream.getTracks().forEach(track => {
+            track.stop();
+        });
+    }
+    const audioSource = audioSelect.value;
+    const videoSource = videoSelect.value;
+    const constraints = {
+        audio: { deviceId: audioSource ? { exact: audioSource } : undefined },
+        video: { deviceId: videoSource ? { exact: videoSource } : undefined }
+    };
+    return navigator.mediaDevices.getUserMedia(constraints).
+        then(gotStream).catch(handleError);
+}
+
+function gotStream(stream) {
+    _mediaStream = stream;
+    //  window.stream = stream; // make stream available to console
+    audioSelect.selectedIndex = [...audioSelect.options].
+        findIndex(option => option.text === stream.getAudioTracks()[0].label);
+    videoSelect.selectedIndex = [...videoSelect.options].
+        findIndex(option => option.text === stream.getVideoTracks()[0].label);
+    videoElement.srcObject = stream;
+}
+
+function handleError(error) {
+    console.error('Error: ', error);
+}
+
+
+var imageAddr = "https://stream.sup-ect.ir/img/test.jpg";
 var downloadSize = 3788800; //bytes
 var Result = 0;
 function ShowProgressMessage(msg) {
@@ -44,8 +105,8 @@ function MeasureConnectionSpeed() {
         var bitsLoaded = downloadSize * 8;
         var speedBps = (bitsLoaded / duration).toFixed(2);
         var speedKbps = (speedBps / 1024).toFixed(0);
-        Result = speedKbps; 
-       // var speedMbps = (speedKbps / 1024).toFixed(2);
+        Result = speedKbps;
+        // var speedMbps = (speedKbps / 1024).toFixed(2);
 
     }
 }
@@ -79,12 +140,11 @@ var WebRtcDemo = WebRtcDemo || {};
 //  feature: multiple chat partners
 
 WebRtcDemo.App = (function (viewModel, connectionManager) {
-    var _mediaStream ,
-        _hub,
+    var _hub,
         STes = [],
         _screenStream,
         _finalStream,
-        _geustStream , 
+        _geustStream,
         _geustStream2,
         _hasStream,
         _guestConnectionID,
@@ -98,25 +158,25 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             };
             hub.client.setMessage = function (message, connectionID, name) {
-                    if (connectionID == viewModel.MyConnectionId()) {
-                        var ul = $(".messages ul");
-                        const li = document.createElement('li');
-                        li.className = 'sent';
-                        li.innerHTML = `<p>` + name +": " + message + `</p> `;
-                        // var li = ' <li class="sent"> < img src = "http://emilcarlsson.se/assets/mikeross.png" alt = "" /> </li >';
-                        ul.append(li);
+                if (connectionID == viewModel.MyConnectionId()) {
+                    var ul = $(".messages ul");
+                    const li = document.createElement('li');
+                    li.className = 'sent';
+                    li.innerHTML = `<p>` + name + ": " + message + `</p> `;
+                    // var li = ' <li class="sent"> < img src = "http://emilcarlsson.se/assets/mikeross.png" alt = "" /> </li >';
+                    ul.append(li);
 
-                    }
-                    else {
-                        var ul = $(".messages ul");
-                        const li = document.createElement('li');
-                        li.className = 'replies';
-                        li.innerHTML = `<p>` + name + ": " + message + `</p> `;
-                        // var li = ' <li class="sent"> < img src = "http://emilcarlsson.se/assets/mikeross.png" alt = "" /> </li >';
-                        ul.append(li);
+                }
+                else {
+                    var ul = $(".messages ul");
+                    const li = document.createElement('li');
+                    li.className = 'replies';
+                    li.innerHTML = `<p>` + name + ": " + message + `</p> `;
+                    // var li = ' <li class="sent"> < img src = "http://emilcarlsson.se/assets/mikeross.png" alt = "" /> </li >';
+                    ul.append(li);
 
 
-                    }
+                }
             };
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
@@ -135,7 +195,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     console.log(responser);
                     console.log("i am waiting please send stream");
                     hub.server.streamRequest(responser);
-                   
+
                 }
             };
             hub.client.updateUserList = function (userList) {
@@ -176,9 +236,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 viewModel.guestConnectionId(acceptingUser.ConnectionId);
-                //var videoElement = document.querySelector('.video.mine');
-                //attachMediaStream(videoElement, STes["1"]);
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, [_geustStream]);// [_geustStream, _mediaStream], "1"); //STes["1"]
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, [_geustStream, _geustStream2], "1");
                 //connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
 
                 // Set UI into call mode
@@ -202,19 +260,27 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 // Let the user know why the server says the call is over
                 //الرت نمیده
-               // alertify.error(reason);
+                // alertify.error(reason);
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);
-
+                _geustStream = null;
+                $(".hangup").css("display", "none");
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
             };
 
             // Hub Callback: Update User List
             hub.client.changeStream = function (stream, acceptingUser) {
+                console.log(stream);
                 console.log(acceptingUser.ConnectionId);
-                connectionManager.changeTrack([_screenStream], acceptingUser.ConnectionId);
+
+                if (stream == 'video') {
+                    connectionManager.changeTrack([_mediaStream], acceptingUser.ConnectionId);
+                }
+                else if (stream == 'blank') {
+                    connectionManager.changeTrack([blackSilence()], acceptingUser.ConnectionId);
+                }
 
                 ////روش دوم
                 //if (stream == 'video') {
@@ -237,9 +303,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //else {
                 //    console.log('blank');
                 //    connectionManager.changeTrack([_screenStream], id);
-                   
+
                 //}
-                
+
 
 
                 // روش اول
@@ -261,11 +327,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //    console.log('blank');
                 //    _finalStream = blackSilence();
                 //}
-               
+
             };
 
             // Hub Callback: WebRTC Signal Received
-            hub.client.receiveSignal = function (callingUser, data ) {
+            hub.client.receiveSignal = function (callingUser, data) {
 
                 connectionManager.newSignal(callingUser.ConnectionId, data);
             };
@@ -276,10 +342,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     //alert('connected to SignalR hub... connection id: ' + _hub.connection.id);
 
                     // Tell the hub what our username is
-                  
+                    console.log(viewModel.Groupname());
+                    console.log(username);
                     hub.server.join(viewModel.Groupname(), username, 'client');
-                    console.log(username + 'joined to ' + viewModel.Groupname());
-
+                    $("#chatname").text(username)
                     if (onSuccess) {
                         onSuccess(hub);
                     }
@@ -313,30 +379,30 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
         _getUsername = function (type) {
             console.log("getusername-" + type);
-            //alertify.prompt(" نام گروه ؟", function (e, username) {
+            _startSession('relay');
+            //alertify.prompt(" نام شما ؟", function (e, username) {
             //    if (e == false || username == '') {
             //        //username = 'کاربر ' + Math.floor((Math.random() * 10000) + 1);
             //        alertify.success('جهت اتصال باید نام کلاس را وارد کنید');
             //    }
             //    else {
-                   
+                    
             //    }
 
             //    // proceed to next step, get media access and start up our connection
-               
+
             //}, '');
-            _startSession("relay");
         },
 
         _startSession = function (username) {
-           
+
             // Set the selected username in the UI
             viewModel.Username(username);
             viewModel.Loading(true); // Turn on the loading indicator
             $('.instructions').hide();
-            //var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             //if (!isMobile) {
-               
+
             //    navigator.mediaDevices.getDisplayMedia({
             //        video: {
             //            cursor: "always"
@@ -350,7 +416,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             //            _screenStream = stream;
 
 
-            //            attachMediaStream(videoScreen, _screenStream);
+            //           // attachMediaStream(videoScreen, _screenStream);
 
             //        },
             //        error => {
@@ -362,29 +428,32 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             //else {
             //    $('.video.screen').css("display", "none");
             //};
-            
-           
+
+
             //getUserMedia(
             //    {
             //        // Permissions to request
-            //        video: true,
+            //        video: {
+            //            facingMode: "environment",
+
+            //        },
             //        audio: true,
             //    },
             //    function (stream) { // succcess callback gives us a media stream
 
-            //        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            //        if (!isMobile) {
-            //             var audioTrack = stream.getAudioTracks()[0];
-            //             _screenStream.addTrack(audioTrack);
-            //        }
-                   
+            //        //var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            //        //if (!isMobile) {
+            //        //     var audioTrack = stream.getAudioTracks()[0];
+            //        //     _screenStream.addTrack(audioTrack);
+            //        //}
+
             //        $('.instructions').hide();
             //        _mediaStream = stream;
-            //        STes["0"] = stream;
+            //        _finalStream = stream;
             //        var videoElement = document.querySelector('.video.mine');
             //        attachMediaStream(videoElement, stream);
             //        $(".audio.mine").css("display", "none");
-                 
+
 
             //        //blackSilence());//
 
@@ -395,7 +464,12 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             //        viewModel.Loading(false);
             //    }
             //);
-            //$(".mineholder").css("display", "inline-block");
+            $('.instructions').hide();
+            _finalStream = _mediaStream;
+            //var videoElement = document.querySelector('.video.mine');
+            //attachMediaStream(videoElement, stream);
+            $(".audio.mine").css("display", "none");
+            $(".mineholder").css("display", "inline-block");
 
 
 
@@ -409,20 +483,24 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 connectionManager.initialize(hub.server, _callbacks.onReadyForStream, _callbacks.onStreamAdded, _callbacks.onStreamRemoved, _callbacks.onTrackAdded);
 
                 // Store off the stream reference so we can share it later
-               // _mediaStream = stream;
+                // _mediaStream = stream;
 
                 // Load the stream into a video element so it starts playing in the UI
                 console.log('playing my local video feed');
 
 
-                
+
 
 
 
                 // Hook up the UI
                 _attachUiHandlers();
-
                 viewModel.Loading(false);
+                _IAMDone = "";
+                _geustStream = null;
+                hub.server.hangUp("");
+                connectionManager.closeAllConnections(viewModel.guestConnectionId());
+                hub.server.callEveryOne(viewModel.guestConnectionId());
             }, function (event) {
                 alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
                 viewModel.Loading(false);
@@ -445,6 +523,63 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         },
 
         _attachUiHandlers = function () {
+            $(".mycamera").click(function () {
+                var x = document.getElementById("cameraSection");
+                if (x.style.display === "none") {
+                    $("#cameraSection").slideDown();
+                    // x.style.display = "block";
+                } else {
+                    $("#cameraSection").slideUp();
+                    // x.style.display = "none";
+                }
+            })
+            $(".chat").click(function () {
+                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    var width = $("#chatHolder").width();
+                    if (width == 0) {
+                        $(".content").css("display", "block");
+                        $("#vidoeHolder").animate({
+                            width: '0%'
+                        });
+                        $("#chatHolder").animate({
+                            width: '100%'
+                        })
+                    }
+                    else {
+                        $(".content").css("display", "none");
+                        $("#vidoeHolder").animate({
+                            width: '100%'
+                        });
+                        $("#chatHolder").animate({
+                            width: '0%'
+                        })
+                    }
+
+                }
+                else {
+                    var width = $("#chatHolder").width();
+                    if (width == 0) {
+                        $("#vidoeHolder").animate({
+                            width: '50%'
+                        });
+                        $("#chatHolder").animate({
+                            width: '50%'
+                        })
+                    }
+                    else {
+                        $("#vidoeHolder").animate({
+                            width: '100%'
+                        });
+                        $("#chatHolder").animate({
+                            width: '0%'
+                        })
+                    }
+
+                }
+
+
+            });
             // Add click handler to users in the "Users" pane
             $('.user').live('click', function () {
                 // Find the target user's SignalR client id
@@ -471,8 +606,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Add handler for the hangup button
             $('.hangup').click(function () {
                 // Only allow hangup if we are not idle
-                $(".requst").css("display","inline-block")
-                $(".hangup").css("display","none")
+                $(".requst").css("display", "inline-block")
+                $(".hangup").css("display", "none")
                 if (viewModel.Mode() != 'idle') {
                     _hub.server.hangUp("");
                     connectionManager.closeAllConnections();
@@ -481,7 +616,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             });
             $('.requst').click(function () {
                 _IAMDone = "";
-                _geustStream =null;
+                _geustStream = null;
                 _hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
                 _hub.server.callEveryOne(viewModel.guestConnectionId());
@@ -504,9 +639,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
         // Connection Manager Callbacks
         _callbacks = {
-            
+
             onReadyForStream: function (connection) {
-              
+
                 // The connection manager needs our stream
                 // todo: not sure I like this
 
@@ -523,27 +658,27 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //        attachMediaStream(videoElement, stream);
                 //        $(".audio.mine").css("display", "none");
 
-                        
+
                 //    },
                 //    error => {
                 //        console.log("Unable to acquire screen capture", error);
                 //    });
-               
+
                 //connection.addStream(_mediaStream); 
 
 
                 var st1 = new MediaStream();
                 var st2 = new MediaStream();
 
-               // st2.getAudioTracks[0] = blackSilence().getAudioTracks[0];
-               // st2.getAudioTracks[0] = _mediaStream.getAudioTracks[0];
+                // st2.getAudioTracks[0] = blackSilence().getAudioTracks[0];
+                // st2.getAudioTracks[0] = _mediaStream.getAudioTracks[0];
 
                 //st2.getVideoTracks[0] = blackSilence().getVideoTracks[0];
-               // st2.getVideoTracks[0] = _mediaStream.getVideoTracks[0];
-              
+                // st2.getVideoTracks[0] = _mediaStream.getVideoTracks[0];
+
                 //let STES = [_mediaStream, blackSilence()];
                 //for (const stream of STES) {
-                    
+
                 //};
                 blackSilence().getTracks().forEach(function (track) {
 
@@ -551,15 +686,15 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 });
                 console.log("adding media stream");
                 //connection.addStream(_finalStream);
-               
-                
+
+
             },
             onStreamAdded: function (connection, event) {
                 console.log('binding remote stream to the partner window');
-                
+
                 // Bind the remote stream to the partner window
-               
-              
+
+
                 //var otherVideo = document.querySelector('.video.partner');
 
                 //attachMediaStream(otherVideo, event.stream); // from adapter.js
@@ -571,8 +706,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 $(".partnerholder").css("display", "inline-block");
                 $(".requst").css("display", "inline-block");
                 $(".hangup").css("display", "inline-block");
-                
-            
+
+
 
 
             },
@@ -582,14 +717,12 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     var otherVideo = document.querySelector('.video.partner');
                     var otherVideo2 = document.querySelector('.video.partner2');
                     //_geustStream = event.stream;
-                    _hasStream = "true";
+                    // _hasStream = "true";
                     var st1 = new MediaStream();
-                    var st2 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {
                             console.log("1 has video")
                             st1.addTrack(event.streams[0].getVideoTracks()[0]);
-                          
 
                         }
 
@@ -598,13 +731,12 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                         if (event.streams[0].getAudioTracks()[0] != null) {
                             console.log("1 has audio")
                             st1.addTrack(event.streams[0].getAudioTracks()[0]);
-                           
                         }
                     }
-                 //   _geustStream = st1;
-                    //_mediaStream
-
                     _geustStream = st1;
+
+                    otherVideo.srcObject = st1;
+                    console.log("partner set");
                     var st2 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[1] != null) {
@@ -615,19 +747,15 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
                     if (event.streams[0].getVideoTracks() != null) {
 
-                        if (event.streams[0].getAudioTracks()[1] != null) {
+                        if (event.streams[0].getAudioTracks()[9] != null) {
                             console.log("2 has audio")
-                            st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                            st2.addTrack(event.streams[0].getAudioTracks()[9]);
                         }
                     }
-                     _geustStream2 = st2;
+                    _geustStream2 = st2;
                     //
-                   
-                   
-                    attachMediaStream(otherVideo, st1);
-                    attachMediaStream(otherVideo2, st2);
-                    //var videoElement = document.querySelector('.video.mine');
-                    //attachMediaStream(videoElement, st2);
+                    //attachMediaStream(otherVideo, st1);
+                    //attachMediaStream(otherVideo2, st2);
                     console.log("ontrack fired!");
 
                     //if (_guestConnectionID != null) {
@@ -639,9 +767,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 else {
                     console.log("_getstream in no null");
                 }
-            
-               
-                
+
+
+
 
 
             },
@@ -660,7 +788,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         getStream: function () { // Temp hack for the connection manager to reach back in here for a stream
             return _mediaStream;
         },
-        setName : _setName
+        setName: _setName
     };
 })(WebRtcDemo.ViewModel, WebRtcDemo.ConnectionManager);
 

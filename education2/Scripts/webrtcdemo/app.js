@@ -92,7 +92,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _RequestedStream = 'blank',
         _connectionManager = connectionManager,
         _indexMustBeChange,
-        _noMoreConnection,
+        _noMoreConnection = "",
+        _relayProcess,
         mixer,
         _connect = function (username, onSuccess, onFailure) {
             // Set Up SignalR Signaler
@@ -218,22 +219,36 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
-                if (_noMoreConnection != "true") {
-                    //_noMoreConnection = true;
-                    hub.server.resPonseToCallEveryOne(connectionID);
+                console.log(_noMoreConnection);
+                
+                if (_noMoreConnection == "") {
                     console.log(connectionID + "i have stream are you ready")
+                   // _noMoreConnection = "true";
+                    //console.log(_noMoreConnection);
+                    hub.server.resPonseToCallEveryOne(connectionID);
+                    
                 }
                 else {
                     console.log("i am buisy")
                 }
             };
          
-            hub.client.streamRequest = function (connectionId, reason) {
+            hub.client.streamRequest = function (connectionId, reason, username) {
+                alert(username);
+                if (username == 'relay') {
+                    console.log("relay true");
+                    _noMoreConnection = "true";
+                }
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
             }
 
+            hub.client.relayCallBack = function (callback) {
+
+                _relayProcess = callback
+                console.log(callback);
+            }
             // Hub Callback: Update User List
 
 
@@ -300,29 +315,33 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             viewModel.Loading(true); // Turn on the loading indicator
 
             // Ask the user for permissions to access the webcam and mic
+            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (!isMobile) {
+                navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        cursor: "always"
+                    },
+                    audio: true
+                }).then(
+                    stream => {
+                        console.log("awesom");
+                        var videoScreen = document.querySelector('.video.screen');
+                        _screenStream = stream;
 
 
-            navigator.mediaDevices.getDisplayMedia({
-                video: {
-                    cursor: "always"
-                },
-                audio: true
-            }).then(
-                stream => {
-                    console.log("awesom");
-                    var videoScreen = document.querySelector('.video.screen');
-                    _screenStream = stream;
-                   
+                        attachMediaStream(videoScreen, _screenStream);
+                       // videoScreen.css("display", "block");
+                        _screenStream.addTrack(silence());
+                        STes["0"] = _screenStream;
+                    },
+                    error => {
+                        console.log("Unable to acquire screen capture", error);
+                        viewModel.Loading(false);
+                    });
 
-                    attachMediaStream(videoScreen, _screenStream);
-                    _screenStream.addTrack(silence());
-                    STes["0"] = _screenStream;
-                },
-                error => {
-                    console.log("Unable to acquire screen capture", error);
-                    viewModel.Loading(false);
-                });
+            }
 
+            
          
 
             $('.instructions').hide();
@@ -384,14 +403,19 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
             })
             // Add click handler to users in the "Users" pane
+           
             $(".transmit").click(function () {
+                console.log(_noMoreConnection);
                 if (_noMoreConnection == "") {
-                    _noMoreConnection = "true";
-                    alertify.error("true")
+                   // _noMoreConnection = "true";
+                    alertify.success("انتقال تصویر فعال شد")
+                    _hub.server.sendRelay();
                 }
                 else {
                     _noMoreConnection = "";
-                    alertify.success("")
+                    _hub.server.killRelay(_relayProcess);
+                    alertify.error("انتقال تصویر غیر فعال شد");
+                    _hub.server.deleteRelayFromList();// 
 
                 }
                
@@ -492,11 +516,13 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Then make sure we aren't calling ourselves.
                 if (targetConnectionId != viewModel.MyConnectionId()) {
                     // Initiate a call
-                    _RequestedStream = 'video';
+                    _hub.server.hangUp(targetConnectionId);
+                    connectionManager.closeConnection(targetConnectionId);
+                    _RequestedStream = 'blank';
                     _hub.server.callUser(targetConnectionId, "");// 
                     console.log("callUser", "");
-                    // UI in calling mode
-                    viewModel.Mode('calling');
+                   
+                    //viewModel.Mode('calling');
                 } else {
                     alertify.error("Ah, nope.  Can't call yourself.");
                 }
