@@ -157,15 +157,18 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
 
             // Hub Callback: Call Accepted
-            hub.client.callAccepted = function (acceptingUser, isChnager) {
+            hub.client.callAccepted = function (acceptingUser, isChnager,username) {
                 _indexMustBeChange = isChnager;
                 if (isChnager != "") {
 
                     _index = "1";
                 }
-                console.log(isChnager);
+              
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
-                console.log(_index);
+                if (username == 'relay') {
+                    console.log("relay true");
+                    _noMoreConnection = "true";
+                }
                 // Callee accepted our call, let's send them an offer with our video stream
                 console.log(_index);
                 // SteamToGo["0"] = STes["0"];
@@ -233,12 +236,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
             };
          
-            hub.client.streamRequest = function (connectionId, reason, username) {
-                alert(username);
-                if (username == 'relay') {
-                    console.log("relay true");
-                    _noMoreConnection = "true";
-                }
+            hub.client.GetStreamRequest = function (connectionId, reason, username) {
+
+                
+                
+               
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
@@ -317,27 +319,27 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Ask the user for permissions to access the webcam and mic
             var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (!isMobile) {
-                navigator.mediaDevices.getDisplayMedia({
-                    video: {
-                        cursor: "always"
-                    },
-                    audio: true
-                }).then(
-                    stream => {
-                        console.log("awesom");
-                        var videoScreen = document.querySelector('.video.screen');
-                        _screenStream = stream;
+                //navigator.mediaDevices.getDisplayMedia({
+                //    video: {
+                //        cursor: "always"
+                //    },
+                //    audio: true
+                //}).then(
+                //    stream => {
+                //        console.log("awesom");
+                //        var videoScreen = document.querySelector('.video.screen');
+                //        _screenStream = stream;
 
 
-                        attachMediaStream(videoScreen, _screenStream);
-                       // videoScreen.css("display", "block");
-                        _screenStream.addTrack(silence());
-                        STes["0"] = _screenStream;
-                    },
-                    error => {
-                        console.log("Unable to acquire screen capture", error);
-                        viewModel.Loading(false);
-                    });
+                //        attachMediaStream(videoScreen, _screenStream);
+                //       // videoScreen.css("display", "block");
+                //        _screenStream.addTrack(silence());
+                //        STes["0"] = _screenStream;
+                //    },
+                //    error => {
+                //        console.log("Unable to acquire screen capture", error);
+                //        viewModel.Loading(false);
+                //    });
 
             }
 

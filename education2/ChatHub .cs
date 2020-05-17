@@ -125,8 +125,9 @@ namespace education2
         public void SendRelay()
         {
             string html = string.Empty;
-            string url = @"http://localhost:8082/openChrome?groupname=123";
-
+           // string url = @"http://localhost:8082/openChrome?groupname=123";
+             string url = @"http://95.217.162.188:8082/openChrome?groupname=123";
+          
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip;
 
@@ -217,7 +218,7 @@ namespace education2
 
             // Tell the original caller that the call was accepted
             //.Client(Context.ConnectionId).alertID(isChnager);
-            Clients.Client(targetConnectionId).callAccepted(callingUser, isChnager);
+            Clients.Client(targetConnectionId).callAccepted(callingUser, isChnager, callingUser.Username);
 
             // Update the user list, since thes two are now in a call
            // SendUserListUpdate("");
@@ -251,7 +252,7 @@ namespace education2
             if (user != null)
             {
                 User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
-                Clients.Client(connectionID).streamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
+                Clients.Client(connectionID).GetStreamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
 
 
             }

@@ -59,57 +59,57 @@ function handleError(error) {
 }
 
 
-var imageAddr = "https://stream.sup-ect.ir/img/test.jpg";
-var downloadSize = 3788800; //bytes
-var Result = 0;
-function ShowProgressMessage(msg) {
-    if (console) {
-        if (typeof msg == "string") {
-            console.log(msg);
-        } else {
-            for (var i = 0; i < msg.length; i++) {
-                console.log(msg[i]);
-            }
-        }
-    }
-    var oProgress = document.getElementById("progress");
-    if (oProgress) {
-        var actualHTML = (typeof msg == "string") ? msg : msg.join("<br />");
-        oProgress.innerHTML = actualHTML;
-    }
-}
-function InitiateSpeedDetection() {
-    ShowProgressMessage("Loading the image, please wait...");
-    window.setTimeout(MeasureConnectionSpeed, 1);
-};
-if (window.addEventListener) {
-    window.addEventListener('load', InitiateSpeedDetection, false);
-} else if (window.attachEvent) {
-    window.attachEvent('onload', InitiateSpeedDetection);
-}
-function MeasureConnectionSpeed() {
-    var startTime, endTime;
-    var download = new Image();
-    download.onload = function () {
-        endTime = (new Date()).getTime();
-        showResults();
-    }
-    download.onerror = function (err, msg) {
-        ShowProgressMessage("Invalid image, or error downloading");
-    }
-    startTime = (new Date()).getTime();
-    var cacheBuster = "?nnn=" + startTime;
-    download.src = imageAddr + cacheBuster;
-    function showResults() {
-        var duration = (endTime - startTime) / 1000;
-        var bitsLoaded = downloadSize * 8;
-        var speedBps = (bitsLoaded / duration).toFixed(2);
-        var speedKbps = (speedBps / 1024).toFixed(0);
-        Result = speedKbps; 
-       // var speedMbps = (speedKbps / 1024).toFixed(2);
+//var imageAddr = "https://stream.sup-ect.ir/img/test.jpg";
+//var downloadSize = 3788800; //bytes
+//var Result = 0;
+//function ShowProgressMessage(msg) {
+//    if (console) {
+//        if (typeof msg == "string") {
+//            console.log(msg);
+//        } else {
+//            for (var i = 0; i < msg.length; i++) {
+//                console.log(msg[i]);
+//            }
+//        }
+//    }
+//    var oProgress = document.getElementById("progress");
+//    if (oProgress) {
+//        var actualHTML = (typeof msg == "string") ? msg : msg.join("<br />");
+//        oProgress.innerHTML = actualHTML;
+//    }
+//}
+//function InitiateSpeedDetection() {
+//    ShowProgressMessage("Loading the image, please wait...");
+//    window.setTimeout(MeasureConnectionSpeed, 1);
+//};
+//if (window.addEventListener) {
+//    window.addEventListener('load', InitiateSpeedDetection, false);
+//} else if (window.attachEvent) {
+//    window.attachEvent('onload', InitiateSpeedDetection);
+//}
+//function MeasureConnectionSpeed() {
+//    var startTime, endTime;
+//    var download = new Image();
+//    download.onload = function () {
+//        endTime = (new Date()).getTime();
+//        showResults();
+//    }
+//    download.onerror = function (err, msg) {
+//        ShowProgressMessage("Invalid image, or error downloading");
+//    }
+//    startTime = (new Date()).getTime();
+//    var cacheBuster = "?nnn=" + startTime;
+//    download.src = imageAddr + cacheBuster;
+//    function showResults() {
+//        var duration = (endTime - startTime) / 1000;
+//        var bitsLoaded = downloadSize * 8;
+//        var speedBps = (bitsLoaded / duration).toFixed(2);
+//        var speedKbps = (speedBps / 1024).toFixed(0);
+//        Result = speedKbps; 
+//       // var speedMbps = (speedKbps / 1024).toFixed(2);
 
-    }
-}
+//    }
+//}
 
 
 
@@ -144,7 +144,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         STes = [],
         _screenStream,
         _finalStream,
-        _geustStream,
+        _geustStream = "0",
         _geustStream2,
         _hasStream,
         _guestConnectionID,
@@ -181,7 +181,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
                 console.log(Result);
-                if (_hasStream == "true") {
+                if (false) {
                     hub.server.resPonseToCallEveryOne(connectionID);
                     console.log("i have stream are you ready")
                 }
@@ -192,6 +192,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.areYouStillThere = function (responser) {
                 if (_IAMDone != true) {
                     _IAMDone = true;
+                  
                     console.log(responser);
                     console.log("i am waiting please send stream");
                     hub.server.streamRequest(responser);
@@ -210,7 +211,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Hub Callback: Incoming Call
             hub.client.incomingCall = function (callingUser) {
                 console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
-
+                alertify.success( "تماس ورودی " + _geustStream)
                 hub.server.answerCall(true, callingUser.ConnectionId);
                 viewModel.Mode('incall');
 
@@ -264,7 +265,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);
-                _geustStream = null;
+                //_geustStream = "0";
                 $(".hangup").css("display", "none");
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
@@ -600,6 +601,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             // Add handler for the hangup button
             $('.hangup').click(function () {
+                _IAMDone = "";
+                _geustStream = "0";
                 // Only allow hangup if we are not idle
                 $(".requst").css("display","inline-block")
                 $(".hangup").css("display","none")
@@ -611,7 +614,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             });
             $('.requst').click(function () {
                 _IAMDone = "";
-                _geustStream = null;
+                _geustStream = "0";
                 _hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
                 _hub.server.callEveryOne(viewModel.guestConnectionId());
@@ -707,8 +710,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             },
             onTrackAdded: function (connection, event) {
-
-                if (_geustStream == null) {
+                alertify.success("ontrack   "+_geustStream);
+               
+                if (_geustStream == "0") {
+                    _geustStream = "1";
                     var otherVideo = document.querySelector('.video.partner');
                     var otherVideo2 = document.querySelector('.video.partner2');
                     //_geustStream = event.stream;
@@ -716,7 +721,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     var st1 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {
-                            console.log("1 has video")
+                         
                             st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
                         }
@@ -724,11 +729,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getAudioTracks()[0] != null) {
-                            console.log("1 has audio")
+                          
                             st1.addTrack(event.streams[0].getAudioTracks()[0]);
                         }
                     }
-                    _geustStream = st1;
+                   // _geustStream = st1;
 
 
 

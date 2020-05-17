@@ -146,7 +146,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _finalStream,
         _geustStream,
         _geustStream2,
-        _hasStream,
+        _hasStream = 'true',
         _guestConnectionID,
         _IAMDone,
 
@@ -181,19 +181,16 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
                 console.log(Result);
-                if (_hasStream == "true") {
-                    hub.server.resPonseToCallEveryOne(connectionID);
-                    console.log("i have stream are you ready")
-                }
-                else {
-                    console.log("i am buisy")
-                }
+
+                hub.server.resPonseToCallEveryOne(connectionID);
+                console.log("i have stream are you ready")
+               
             };
             hub.client.areYouStillThere = function (responser) {
                 if (_IAMDone != true) {
                     _IAMDone = true;
                     console.log(responser);
-                    console.log("i am waiting please send stream");
+                    alertify.success("i am waiting please send stream");
                     hub.server.streamRequest(responser);
 
                 }
@@ -202,7 +199,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 viewModel.setUsers(userList);
             };
-            hub.client.streamRequest = function (connectionId, reason) {
+            hub.client.GetStreamRequest = function (connectionId, reason) {
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
@@ -247,7 +244,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.callDeclined = function (decliningConnectionId, reason) {
                 console.log('رد تماس از طرف: ' + decliningConnectionId);
 
-                // Let the user know that the callee declined to talk
+                // Let the user know that the callee declined to talk 32478b2379023b923
                 alertify.error(reason);
 
                 // Back to an idle UI
@@ -264,7 +261,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 // Close the WebRTC connection
                 connectionManager.closeConnection(connectionId);
-                _geustStream = null;
+                //_geustStream = null;
                 $(".hangup").css("display", "none");
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
@@ -734,7 +731,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                         }
                     }
                     _geustStream = st1;
-
+                   // _hasStream = "true";
                     otherVideo.srcObject = st1;
                     console.log("partner set");
                     var st2 = new MediaStream();
