@@ -88,6 +88,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _hub,
         STes = [],
         SteamToGo = [],
+        SteamUsedID = ["webcam","0","0"],
         _index,
         _RequestedStream = 'blank',
         _connectionManager = connectionManager,
@@ -171,18 +172,15 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
                 // Callee accepted our call, let's send them an offer with our video stream
                 console.log(_index);
-                // SteamToGo["0"] = STes["0"];
-                //SteamToGo["0"] = STes[_index];
+                SteamToGo["0"] = _mediaStream;
+                SteamToGo["1"] = blackSilence();
+                SteamToGo["2"] = blackSilence();
+
                 // send signal moved to onclick
+                
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
-                if (_RequestedStream != "blank") {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream], "1");
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
 
-                }
-                else {
-                    connectionManager.initiateOffer(acceptingUser.ConnectionId, [_mediaStream], "0");
-
-                }
 
                 //mixer.frameInterval = 1;
                 //mixer.startDrawingFrames();
@@ -319,27 +317,27 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Ask the user for permissions to access the webcam and mic
             var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (!isMobile) {
-                //navigator.mediaDevices.getDisplayMedia({
-                //    video: {
-                //        cursor: "always"
-                //    },
-                //    audio: true
-                //}).then(
-                //    stream => {
-                //        console.log("awesom");
-                //        var videoScreen = document.querySelector('.video.screen');
-                //        _screenStream = stream;
+                navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        cursor: "always"
+                    },
+                    audio: true
+                }).then(
+                    stream => {
+                        console.log("awesom");
+                        var videoScreen = document.querySelector('.video.screen');
+                        _screenStream = stream;
 
 
-                //        attachMediaStream(videoScreen, _screenStream);
-                //       // videoScreen.css("display", "block");
-                //        _screenStream.addTrack(silence());
-                //        STes["0"] = _screenStream;
-                //    },
-                //    error => {
-                //        console.log("Unable to acquire screen capture", error);
-                //        viewModel.Loading(false);
-                //    });
+                        attachMediaStream(videoScreen, _screenStream);
+                       // videoScreen.css("display", "block");
+                        _screenStream.addTrack(silence());
+                        STes["101010"] = _screenStream;
+                    },
+                    error => {
+                        console.log("Unable to acquire screen capture", error);
+                        viewModel.Loading(false);
+                    });
 
             }
 
@@ -651,77 +649,34 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _resetStream = function (id) {
 
 
+            
             var hub = $.connection.chatHub;
-            console.log(id);
-            connectionManager.changeTrack([STes[id]], id);
-            //if (id == "0") {
-            //    connectionManager.changeTrack([ STes["0"], STes["1"]], id);
 
-            //} else {
+            if (SteamUsedID.includes(id)) {
+                console.log("stream exist")
+                var IN = SteamUsedID.indexOf(id);
+                SteamUsedID[IN] = "0";
+                SteamToGo[IN] = blackSilence();
 
-                
-            //}
-            // creation of first channel
+                hub.server.hideVideoOnClient(viewModel.Groupname() ,IN+1);
 
+            }
+            else {
+               console.log("stream not exist")
+                 var IN2 = SteamUsedID.indexOf("0");
+                console.log(IN2)
+              
+                SteamUsedID["" + IN2] = id;
+                console.log(SteamUsedID["" + IN2]);
+                SteamToGo["" + IN2] = STes[id];
+                hub.server.showVideoOnClient(viewModel.Groupname() ,IN2+1);
+               
+            }
 
-            //close one connection and then close other and reopen other with new connection
-            //if (id != "0" && id != "1") {
-
-            //    //var connections = connectionManager.getConnection();
-            //    //var thisConnection = connectionManager.getConnecttionByID();
-            //    //connections.forEach(function (connection) {
-            //    //    if (connection != thisConnection) {
-            //    //        connection.stream.resetVideoStreams(STes[id]);
-            //    //    }
-            //    //});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            //   //// close
-            //   // _hub.server.hangUp(id);
-            //   // // _hub.revoke('HangUp', targetConnectionId);
-            //   // connectionManager.closeConnection(id);
-            //   // viewModel.Mode('idle');
-
-            //   // //open new
-            //   // _hub.server.callUser(id, "1");// 
-
-
-            //   // viewModel.Mode('calling');
-            //   // console.log("stream is ready:" + _index);
-
-
-            //}
-            //else {
-
-
-
-
-
-
-            //    //console.log("no hangup");
-            //    //_RequestedStream = 'blank';
-            //    //hub.invoke('HangUpEcexpt', id);
-            //    //WebRtcDemo.ConnectionManager.closeAllConnections(id);
-            //    //WebRtcDemo.ViewModel.Mode('idle');
-            //    //hub.invoke('resetAllConnction', id);
-            //}
-
-
-
-
-
+           
+            connectionManager.changeTrack(SteamToGo, id);
+           
+           
 
         },
         _setupHubCallbacks = function (hub) {

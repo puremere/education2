@@ -233,7 +233,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 viewModel.guestConnectionId(acceptingUser.ConnectionId);
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, [_geustStream, _geustStream2], "1");
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, STes, "1");
                 //connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
 
                 // Set UI into call mode
@@ -710,60 +710,84 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             },
             onTrackAdded: function (connection, event) {
 
-                if (_geustStream == null) {
-                    var otherVideo = document.querySelector('.video.partner');
-                    var otherVideo2 = document.querySelector('.video.partner2');
-                    //_geustStream = event.stream;
-                    // _hasStream = "true";
-                    var st1 = new MediaStream();
-                    if (event.streams[0].getVideoTracks() != null) {
-                        if (event.streams[0].getVideoTracks()[0] != null) {
-                            console.log("1 has video")
-                            st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
-                        }
+
+                var st1 = new MediaStream();
+                if (event.streams[0].getVideoTracks() != null) {
+                    if (event.streams[0].getVideoTracks()[0] != null) {
+                        console.log("1 has video")
+                        st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
                     }
-                    if (event.streams[0].getVideoTracks() != null) {
-                        if (event.streams[0].getAudioTracks()[0] != null) {
-                            console.log("1 has audio")
-                            st1.addTrack(event.streams[0].getAudioTracks()[0]);
-                        }
-                    }
-                    _geustStream = st1;
-                   // _hasStream = "true";
-                    otherVideo.srcObject = st1;
-                    console.log("partner set");
-                    var st2 = new MediaStream();
-                    if (event.streams[0].getVideoTracks() != null) {
-                        if (event.streams[0].getVideoTracks()[1] != null) {
-                            console.log("2 has video")
-                            st2.addTrack(event.streams[0].getVideoTracks()[1]);
-
-                        }
-                    }
-                    if (event.streams[0].getVideoTracks() != null) {
-
-                        if (event.streams[0].getAudioTracks()[9] != null) {
-                            console.log("2 has audio")
-                            st2.addTrack(event.streams[0].getAudioTracks()[9]);
-                        }
-                    }
-                    _geustStream2 = st2;
-                    //
-                    //attachMediaStream(otherVideo, st1);
-                    //attachMediaStream(otherVideo2, st2);
-                    console.log("ontrack fired!");
-
-                    //if (_guestConnectionID != null) {
-                    //    connectionManager.sendSignal(_guestConnectionID, _RequestedStream);
-                    //    connectionManager.initiateOffer(_guestConnectionID, [_geustStream, _geustStream2], "1");
-                    //}
 
                 }
-                else {
-                    console.log("_getstream in no null");
+                if (event.streams[0].getVideoTracks() != null) {
+                    if (event.streams[0].getAudioTracks()[0] != null) {
+                        console.log("1 has audio")
+                        st1.addTrack(event.streams[0].getAudioTracks()[0]);
+                    }
                 }
+                STes[0] = st1;
+               
+                var st2 = new MediaStream();
+                if (event.streams[0].getVideoTracks() != null) {
+                    if (event.streams[0].getVideoTracks()[1] != null) {
+                        console.log("2 has video")
+                        st2.addTrack(event.streams[0].getVideoTracks()[1]);
+
+                    }
+                }
+                if (event.streams[0].getVideoTracks() != null) {
+
+                    if (event.streams[0].getAudioTracks()[1] != null) {
+                        console.log("2 has audio")
+                        st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                    }
+                }
+
+                STes[1] = st2;
+
+                var st3 = new MediaStream();
+                if (event.streams[0].getVideoTracks() != null) {
+                    if (event.streams[0].getVideoTracks()[2] != null) {
+                        console.log("3 has video")
+                        st3.addTrack(event.streams[0].getVideoTracks()[2]);
+
+                    }
+                }
+                if (event.streams[0].getVideoTracks() != null) {
+
+                    if (event.streams[0].getAudioTracks()[2] != null) {
+                        console.log("3 has audio")
+                        st3.addTrack(event.streams[0].getAudioTracks()[2]);
+                    }
+                }
+                STes[2] = st3;
+
+               
+
+
+
+                //if (_geustStream == null) {
+                //    var otherVideo = document.querySelector('.video.partner');
+                //    var otherVideo2 = document.querySelector('.video.partner2');
+                //    //_geustStream = event.stream;
+                //    // _hasStream = "true";
+                    
+                //    //
+                //    //attachMediaStream(otherVideo, st1);
+                //    //attachMediaStream(otherVideo2, st2);
+                //    console.log("ontrack fired!");
+
+                //    //if (_guestConnectionID != null) {
+                //    //    connectionManager.sendSignal(_guestConnectionID, _RequestedStream);
+                //    //    connectionManager.initiateOffer(_guestConnectionID, [_geustStream, _geustStream2], "1");
+                //    //}
+
+                //}
+                //else {
+                //    console.log("_getstream in no null");
+                //}
 
 
 

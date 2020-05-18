@@ -1,10 +1,28 @@
-﻿.mineholderAfter {
+﻿.master {
+    width: 85%;
+    height: 100%;
+    float: left;
+    position: absolute;
+}
+.slave {
+    width: 100%;
+     right:0px;
+    float: right;
+    margin-bottom:2px
     
+}
+.slave video{
+    width:15%;
+    float:right;
+}
+
+
+.mineholderAfter {
     position: absolute;
     top: 0;
     right: 0;
     z-index: 20000;
-    width:200px
+    width: 0%
 }
 
 .mineholder {

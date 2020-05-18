@@ -282,54 +282,22 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 else if (stream == 'blank') {
                     connectionManager.changeTrack([blackSilence()], acceptingUser.ConnectionId);
                 }
-
-                ////روش دوم
-                //if (stream == 'video') {
-                //    console.log('video');
-                //    _finalStream = _mediaStream;
-                //    connectionManager.changeTrack([_screenStream], id);
-                //}
-                //else if (stream == 'screen') {
-                //    console.log('screen');
-                //    if (_screenStream == null) {
-                //        _finalStream = _mediaStream;
-                //        connectionManager.changeTrack([_screenStream], id);
-
-                //    } else {
-                //        _finalStream = _screenStream;
-                //        connectionManager.changeTrack([_screenStream], id);
-
-                //    }
-                //}
-                //else {
-                //    console.log('blank');
-                //    connectionManager.changeTrack([_screenStream], id);
-                   
-                //}
                 
-
-
-                // روش اول
-                //if (stream == 'video') {
-                //    console.log('video');
-                //    _finalStream = _mediaStream;
-                //}
-                //else if (stream == 'screen') {
-                //    console.log('screen');
-                //    if (_screenStream == null) {
-                //        _finalStream = _mediaStream;
-
-                //    } else {
-                //        _finalStream = _screenStream;
-
-                //    }
-                //}
-                //else {
-                //    console.log('blank');
-                //    _finalStream = blackSilence();
-                //}
                
             };
+            hub.client.HideYourVideo = function (index) {
+                var srt = '.video.partner' + index;
+                console.log(srt);
+                var videoToHide = document.querySelector(srt);
+                videoToHide.style.display = "none";
+            };
+            hub.client.ShowYourVideo = function (index) {
+                var srt = '.video.partner' + index;
+                console.log(srt);
+                var videoToHide = document.querySelector(srt);
+                videoToHide.style.display = "block";
+            };
+            
 
             // Hub Callback: WebRTC Signal Received
             hub.client.receiveSignal = function (callingUser, data ) {
@@ -710,18 +678,20 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             },
             onTrackAdded: function (connection, event) {
-                alertify.success("ontrack   "+_geustStream);
+               // alertify.success("ontrack   "+_geustStream);
                
                 if (_geustStream == "0") {
                     _geustStream = "1";
                     var otherVideo = document.querySelector('.video.partner');
                     var otherVideo2 = document.querySelector('.video.partner2');
+                    var otherVideo3 = document.querySelector('.video.partner3');
+                  
                     //_geustStream = event.stream;
                    // _hasStream = "true";
                     var st1 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {
-                         
+                            console.log("1 has video")
                             st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
                         }
@@ -729,13 +699,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getAudioTracks()[0] != null) {
-                          
+                            console.log("1 has audio")
                             st1.addTrack(event.streams[0].getAudioTracks()[0]);
                         }
                     }
-                   // _geustStream = st1;
-
-
+                   
 
                     var st2 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
@@ -747,15 +715,38 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
                     if (event.streams[0].getVideoTracks() != null) {
 
-                        if (event.streams[0].getAudioTracks()[9] != null) {
+                        if (event.streams[0].getAudioTracks()[1] != null) {
                             console.log("2 has audio")
-                            st2.addTrack(event.streams[0].getAudioTracks()[9]);
+                            st2.addTrack(event.streams[0].getAudioTracks()[1]);
                         }
                     }
-                    _geustStream2 = st2;
-                    //
+
+                    
+
+                    var st3 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[2] != null) {
+                            console.log("3 has video")
+                            st3.addTrack(event.streams[0].getVideoTracks()[2]);
+
+                        }
+                    }
+                    if (event.streams[0].getVideoTracks() != null) {
+
+                        if (event.streams[0].getAudioTracks()[2] != null) {
+                            console.log("3 has audio")
+                            st3.addTrack(event.streams[0].getAudioTracks()[2]);
+                        }
+                    }
+                   
+
+                   
+                    
+
                     attachMediaStream(otherVideo, st1);
                     attachMediaStream(otherVideo2, st2);
+                    attachMediaStream(otherVideo3, st3);
+                 
                     console.log("ontrack fired!");
 
                     //if (_guestConnectionID != null) {

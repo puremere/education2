@@ -104,7 +104,7 @@ body {
         linear-gradient(315deg, #ECEDDC 25%, transparent 25%),
         linear-gradient(45deg, #ECEDDC 25%, transparent 25%);*/	
         background-size: 100px 100px;
-        background-color: #EC173A;
+        background-color: #000;
 }
 
 /* alertify styles */

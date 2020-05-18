@@ -162,6 +162,15 @@ namespace education2
             string groupname = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId).GroupName;
             SendUserListUpdate(groupname);
         }
+
+        public void HideVideoOnClient(string groupname ,string index)
+        {
+            Clients.Group(groupname).HideYourVideo(index);
+        }
+        public void ShowVideoOnClient(string groupname, string index)
+        {
+            Clients.Group(groupname).ShowYourVideo(index);
+        }
         public void AnswerCall(bool acceptCall, string targetConnectionId)
         {
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
@@ -252,7 +261,7 @@ namespace education2
             if (user != null)
             {
                 User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
-                Clients.Client(connectionID).GetStreamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
+                Clients.Client(connectionID).GetStreamRequestsendSignalForStream(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
 
 
             }
