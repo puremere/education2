@@ -104,7 +104,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _index = index;
             };
             hub.client.alertID = function (count) {
-                alert(count);
+               
             };
             hub.client.closeAll = function (id) {
 
@@ -237,7 +237,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.GetStreamRequest = function (connectionId, reason, username) {
 
                 
-                
+                console.log("calling user");
                
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
@@ -559,7 +559,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     if ((file = this.files[i])) {
                         size = this.files[i].size;
                         filename = this.files[i].filename;
-                        alert(this.files[i].name);
+                       // alert(this.files[i].name);
                         formdata.append(this.files[i].name, this.files[i]);
 
 
@@ -597,7 +597,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                             $("#err").fadeOut();
                         },
                         success: function (result) {
-                            alert("success")
+                            //alert("success")
                             //if (result == 'invalid file') {
                             //    // invalid file format.
                             //    $("#err").html("Invalid File. Image must be JPEG, PNG or GIF.").fadeIn();

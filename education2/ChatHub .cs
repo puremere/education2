@@ -261,7 +261,7 @@ namespace education2
             if (user != null)
             {
                 User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
-                Clients.Client(connectionID).GetStreamRequestsendSignalForStream(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
+                Clients.Client(connectionID).GetStreamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
 
 
             }

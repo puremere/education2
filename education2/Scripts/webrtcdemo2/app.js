@@ -145,10 +145,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _screenStream,
         _finalStream,
         _geustStream = "0",
-        _geustStream2,
+        _slaveNumber = 1,
         _hasStream,
         _guestConnectionID,
         _IAMDone,
+        _width,_height,
 
         _connect = function (username, onSuccess, onFailure) {
             // Set Up SignalR Signaler
@@ -180,7 +181,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
-                console.log(Result);
+                
                 if (false) {
                     hub.server.resPonseToCallEveryOne(connectionID);
                     console.log("i have stream are you ready")
@@ -204,6 +205,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 viewModel.setUsers(userList);
             };
             hub.client.streamRequest = function (connectionId, reason) {
+                console.log("calling user");
                 _RequestedStream = 'blank';
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
@@ -211,7 +213,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             // Hub Callback: Incoming Call
             hub.client.incomingCall = function (callingUser) {
                 console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
-                alertify.success( "تماس ورودی " + _geustStream)
+               // alertify.success( "تماس ورودی " + _geustStream)
                 hub.server.answerCall(true, callingUser.ConnectionId);
                 viewModel.Mode('incall');
 
@@ -286,16 +288,57 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                
             };
             hub.client.HideYourVideo = function (index) {
-                var srt = '.video.partner' + index;
-                console.log(srt);
-                var videoToHide = document.querySelector(srt);
-                videoToHide.style.display = "none";
+                if (_slaveNumber > 1) {
+                    var srt = '.video.partner' + index;
+                    console.log(srt);
+                    var videoToHide = document.querySelector(srt);
+                    videoToHide.style.display = "none";
+                    _slaveNumber = _slaveNumber - 1;
+                 
+                    if (_slaveNumber == 1) {
+                        $(".master").css("height", "100%");
+                        $(".slave").css("width", "30%");
+                        $(".slave").css("height", "30%");
+                        $(".slave").css("position", "absolute");
+                    }
+                    else if (_slaveNumber == 2) {
+                        $(".master").css("height", "50%");
+                        $(".slave").css("width", "50%");
+                        $(".slave").css("height", "50%");
+                        $(".slave").css("position", "relative");
+                        $(".slave video").css("object-fit", "cover");
+                    }
+                }
+                
+
             };
             hub.client.ShowYourVideo = function (index) {
-                var srt = '.video.partner' + index;
-                console.log(srt);
-                var videoToHide = document.querySelector(srt);
-                videoToHide.style.display = "block";
+                if (_slaveNumber < 3) {
+                    var srt = '.video.partner' + index;
+                    console.log(srt);
+                    var videoToHide = document.querySelector(srt);
+                    videoToHide.style.display = "block";
+                    _slaveNumber = _slaveNumber + 1;
+                  
+                    if (_slaveNumber == 2) {
+                        $(".master").css("height", "50%");
+                        $(".slave").css("width", "50%");
+                        $(".slave").css("height", "50%");
+                        $(".slave").css("position", "relative");
+                        $(".slave video").css("object-fit", "cover");
+
+                    }
+                    else if (_slaveNumber == 3) {
+                        $(".master").css("height", "50%");
+                        $(".master").css("width", "50%");
+                        $(".slave").css("width", "50%");
+                        $(".slave").css("height", "50%");
+                        $(".slave").css("position", "relative");
+                        $(".slave video").css("object-fit", "cover");
+
+                    }
+                }
+                
             };
             
 
@@ -487,6 +530,76 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         },
 
         _attachUiHandlers = function () {
+
+            var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile) {
+                $(".slave").click(function () {
+                    if (_slaveNumber > 1) {
+                       
+                        if ($(this).width() != screen.width || screen.height -  $(this).height() + $(".container-fluid").height() > 100 ) {
+
+                            $(this).css("width", "100%");
+                            $(this).css("height", "100%");
+                            $(this).css("position", "absolute");
+                            $(this).css("z-index", "9");
+                            $(this).css("overflow", "none");
+                            $(".slave video").css("object-fit", "contain");
+                            
+                        }
+                        else {
+                            $(this).css("width", "50%");
+                            $(this).css("height", "50%");
+                            $(this).css("position", "relative");
+                            $(this).css("z-index", "1");
+                            $(this).css("overflow", "hidden");
+                            $(".slave video").css("object-fit", "cover");
+                           
+                        }
+                    }
+                })
+                $(".master").click(function () {
+                  
+                    if (_slaveNumber == 1) {
+                     
+                        if ($(this).width() != screen.width) {
+
+                            $(this).css("position", "relative");
+                            $(this).css("width", "100%");
+                            $(this).css("z-index", "0");
+                         
+                        }
+                        else {
+                            $(this).css("position", "absolute");
+                            $(this).css("width", "101%");
+                            $(this).css("z-index", "9");
+                           
+
+                        }
+                    }
+                    else if (_slaveNumber == 2) {
+                        if ($(this).width() != screen.width || screen.height - $(this).height() + $(".container-fluid").height() > 100) {
+
+                            $(this).css("width", "100%");
+                            $(this).css("height", "100%");
+                            $(this).css("position", "absolute");
+                            $(this).css("z-index", "9");
+                            $(this).css("overflow", "none");
+                            $(this).css("object-fit", "scale-down");
+
+                        }
+                        else {
+                            $(this).css("width", "100%");
+                            $(this).css("height", "50%");
+                            $(this).css("position", "relative");
+                            $(this).css("z-index", "1");
+                            $(this).css("overflow", "hidden");
+                            $(this).css("object-fit", "cover");
+
+                        }
+                    }
+                });
+            }
+
             $(".mycamera").click(function () {
                 var x = document.getElementById("cameraSection");
                 if (x.style.display === "none") {
@@ -665,10 +778,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 //attachMediaStream(otherVideo, event.stream); // from adapter.js
 
-                $(".video.mine").parent().removeClass();
-                $(".video.mine").parent().addClass('mineholderAfter');
-                $(".video.screen").parent().removeClass();
-                $(".video.screen").parent().addClass('mineholderScreenAfter');
+                //$(".video.mine").parent().removeClass();
+                //$(".video.mine").parent().addClass('mineholderAfter');
+                //$(".video.screen").parent().removeClass();
+                //$(".video.screen").parent().addClass('mineholderScreenAfter');
                 $(".partnerholder").css("display", "inline-block");
                 $(".requst").css("display", "inline-block");
                 $(".hangup").css("display", "inline-block");
