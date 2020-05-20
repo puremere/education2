@@ -146,7 +146,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _finalStream,
         _geustStream = "0",
         _slaveNumber = 1,
-        _hasStream,
+        _streamType = 'blank',
         _guestConnectionID,
         _IAMDone,
         _width,_height,
@@ -214,6 +214,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.incomingCall = function (callingUser) {
                 console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
                // alertify.success( "تماس ورودی " + _geustStream)
+                if (callingUser.Username != 'relay') {
+                    _streamType = "video"
+                }
                 hub.server.answerCall(true, callingUser.ConnectionId);
                 viewModel.Mode('incall');
 
@@ -759,10 +762,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //for (const stream of STES) {
                     
                 //};
-                blackSilence().getTracks().forEach(function (track) {
+                if (_streamType == 'video') {
+                    _mediaStream.getTracks().forEach(function (track) {
 
-                    connection.addTrack(track, st1);
-                });
+                        connection.addTrack(track, st1);
+                    });
+                }
+                else {
+                   
+                    blackSilence().getTracks().forEach(function (track) {
+
+                        connection.addTrack(track, st1);
+                    });
+                }
+
+                
                 console.log("adding media stream");
                 //connection.addStream(_finalStream);
                
@@ -800,7 +814,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     var otherVideo3 = document.querySelector('.video.partner3');
                   
                     //_geustStream = event.stream;
-                   // _hasStream = "true";
+                    //_hasStream = "true";
                     var st1 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {

@@ -230,7 +230,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             hub.client.callAccepted = function (acceptingUser) {
 
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
-
+               
+                _geustStream = "1";
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 viewModel.guestConnectionId(acceptingUser.ConnectionId);
                 connectionManager.initiateOffer(acceptingUser.ConnectionId, STes, "1");
@@ -494,7 +495,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _attachUiHandlers();
                 viewModel.Loading(false);
                 _IAMDone = "";
-                _geustStream = null;
+                _geustStream = "0";
                 hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
                 hub.server.callEveryOne(viewModel.guestConnectionId());
@@ -602,6 +603,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             // Add handler for the hangup button
             $('.hangup').click(function () {
+                _IAMDone = "";
+                _geustStream = "0";
                 // Only allow hangup if we are not idle
                 $(".requst").css("display", "inline-block")
                 $(".hangup").css("display", "none")
@@ -613,7 +616,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             });
             $('.requst').click(function () {
                 _IAMDone = "";
-                _geustStream = null;
+                _geustStream = "0";
                 _hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
                 _hub.server.callEveryOne(viewModel.guestConnectionId());
@@ -695,11 +698,6 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 //var otherVideo = document.querySelector('.video.partner');
 
                 //attachMediaStream(otherVideo, event.stream); // from adapter.js
-
-                $(".video.mine").parent().removeClass();
-                $(".video.mine").parent().addClass('mineholderAfter');
-                $(".video.screen").parent().removeClass();
-                $(".video.screen").parent().addClass('mineholderScreenAfter');
                 $(".partnerholder").css("display", "inline-block");
                 $(".requst").css("display", "inline-block");
                 $(".hangup").css("display", "inline-block");
@@ -710,63 +708,72 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             },
             onTrackAdded: function (connection, event) {
 
+                if (_geustStream == "0") {
+                    _geustStream == "1"
+                    var otherVideo = document.querySelector('.video.partner');
+                    var otherVideo2 = document.querySelector('.video.partner2');
+                    var otherVideo3 = document.querySelector('.video.partner3');
 
 
-                var st1 = new MediaStream();
-                if (event.streams[0].getVideoTracks() != null) {
-                    if (event.streams[0].getVideoTracks()[0] != null) {
-                        console.log("1 has video")
-                        st1.addTrack(event.streams[0].getVideoTracks()[0]);
+                    var st1 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[0] != null) {
+                            console.log("1 has video")
+                            st1.addTrack(event.streams[0].getVideoTracks()[0]);
 
-                    }
-
-                }
-                if (event.streams[0].getVideoTracks() != null) {
-                    if (event.streams[0].getAudioTracks()[0] != null) {
-                        console.log("1 has audio")
-                        st1.addTrack(event.streams[0].getAudioTracks()[0]);
-                    }
-                }
-                STes[0] = st1;
-               
-                var st2 = new MediaStream();
-                if (event.streams[0].getVideoTracks() != null) {
-                    if (event.streams[0].getVideoTracks()[1] != null) {
-                        console.log("2 has video")
-                        st2.addTrack(event.streams[0].getVideoTracks()[1]);
+                        }
 
                     }
-                }
-                if (event.streams[0].getVideoTracks() != null) {
-
-                    if (event.streams[0].getAudioTracks()[1] != null) {
-                        console.log("2 has audio")
-                        st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getAudioTracks()[0] != null) {
+                            console.log("1 has audio")
+                            st1.addTrack(event.streams[0].getAudioTracks()[0]);
+                        }
                     }
-                }
+                    STes[0] = st1;
 
-                STes[1] = st2;
+                    var st2 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[1] != null) {
+                            console.log("2 has video")
+                            st2.addTrack(event.streams[0].getVideoTracks()[1]);
 
-                var st3 = new MediaStream();
-                if (event.streams[0].getVideoTracks() != null) {
-                    if (event.streams[0].getVideoTracks()[2] != null) {
-                        console.log("3 has video")
-                        st3.addTrack(event.streams[0].getVideoTracks()[2]);
-
+                        }
                     }
-                }
-                if (event.streams[0].getVideoTracks() != null) {
+                    if (event.streams[0].getVideoTracks() != null) {
 
-                    if (event.streams[0].getAudioTracks()[2] != null) {
-                        console.log("3 has audio")
-                        st3.addTrack(event.streams[0].getAudioTracks()[2]);
+                        if (event.streams[0].getAudioTracks()[1] != null) {
+                            console.log("2 has audio")
+                            st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                        }
                     }
+
+                    STes[1] = st2;
+
+                    var st3 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[2] != null) {
+                            console.log("3 has video")
+                            st3.addTrack(event.streams[0].getVideoTracks()[2]);
+
+                        }
+                    }
+                    if (event.streams[0].getVideoTracks() != null) {
+
+                        if (event.streams[0].getAudioTracks()[2] != null) {
+                            console.log("3 has audio")
+                            st3.addTrack(event.streams[0].getAudioTracks()[2]);
+                        }
+                    }
+                    STes[2] = st3;
+
+
+
+                    attachMediaStream(otherVideo, st1);
+                    attachMediaStream(otherVideo2, st2);
+                    attachMediaStream(otherVideo3, st3);
                 }
-                STes[2] = st3;
-
-               
-
-
+                
 
                 //if (_geustStream == null) {
                 //    var otherVideo = document.querySelector('.video.partner');

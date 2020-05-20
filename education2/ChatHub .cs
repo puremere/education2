@@ -114,7 +114,7 @@ namespace education2
 
             // They are here, so tell them someone wants to talk
             Clients.Client(targetConnectionId).incomingCall(callingUser);
-
+            
             // Create an offer
             CallOffers.Add(new CallOffer
             {
@@ -144,7 +144,7 @@ namespace education2
         public void KillRelay(string id)
         {
             string html = string.Empty;
-            string url = @"http://localhost:8083/closeChrome?id="+ id;
+            string url = @"http://95.217.162.188:8083/closeChrome?id=" + id;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip;

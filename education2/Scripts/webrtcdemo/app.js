@@ -180,7 +180,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
-
+                //connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
+                
 
                 //mixer.frameInterval = 1;
                 //mixer.startDrawingFrames();
@@ -427,7 +428,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 var targetConnectionId = $(this).attr('data-cid');
                 if (targetConnectionId != viewModel.MyConnectionId()) {
-                    _RequestedStream = 'screen';
+                    _RequestedStream = 'video';
                     connectionManager.sendSignal(targetConnectionId, _RequestedStream);
 
                     //_hub.server.hangUp(targetConnectionId);
@@ -704,10 +705,25 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 console.log("on track added fire");
                 var i = new MediaStream();
-                if (event.stream.getAudioTracks[0] != null) {
-                    i.getAudioTracks[0] = event.stream.getAudioTracks[0];
-                    console.log("is-audio ")
+                if (event.streams != null) {
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getAudioTracks()[0] != null) {
+                            i.getAudioTracks[0] = event.stream[0].getAudioTracks[0];
+                            console.log("is-audio ")
+                        }
+                        else {
+                            console.log("is-audio first ")
+                        }
+
+                    }
+                    else {
+                        console.log("is-audio totally ")
+                    }
                 }
+                else {
+                    console.log("stream is blank ")
+                }
+                
                 if (event.stream.getVideoTracks[0] != null) {
                     i.getVideoTracks[0] = event.stream.getVideoTracks[0];
                     console.log("is-video ")
