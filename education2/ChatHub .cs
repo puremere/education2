@@ -30,6 +30,7 @@ namespace education2
 
 
         private static readonly List<User> Users = new List<User>();
+        private static readonly List<Relay> Relayes = new List<Relay>();
         private static readonly List<UserCall> UserCalls = new List<UserCall>();
         private static readonly List<CallOffer> CallOffers = new List<CallOffer>();
         
@@ -39,7 +40,18 @@ namespace education2
         }
         public void Join(string groupname , string username,string type)
         {
+            if (username != "relay")
+            {
+                User UserCheck = Users.SingleOrDefault(x => x.GroupName == groupname && x.Username == "relay" && x.GuestIDes.Contains("zero"));
+                if (UserCheck == null)
+                {
+                    SendRelay(groupname);
+                }
+            }
+           
+
             User user = Users.SingleOrDefault(x => x.Username == username && x.GroupName == groupname);
+           
             if (user != null)
             {
                 Groups.Remove(user.ConnectionId, groupname);
@@ -104,7 +116,14 @@ namespace education2
                 finalstring = finalstring + item + ",";
             }
             callingUser.GuestIDes = finalstring.Trim(',');
-
+            if (!finalstring.Contains("zero"))
+            {
+                User UserList = Users.SingleOrDefault(x => x.GroupName == groupname && x.Username == "relay" && x.GuestIDes.Contains("zero"));
+                if (UserList == null)
+                {
+                    SendRelay(groupname);
+                }
+            }
 
              var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
 
@@ -134,11 +153,11 @@ namespace education2
                 Callee = targetUser
             });
         }
-        public void SendRelay()
+        public void SendRelay(string groupname)
         {
             string html = string.Empty;
-           // string url = @"http://localhost:8082/openChrome?groupname=123";
-             string url = @"http://95.217.162.188:8082/openChrome?groupname=123";
+             string url = @"http://localhost:8082/openChrome?groupname="+ groupname;
+            // string url = @"http://95.217.162.188:8082/openChrome?groupname=123";
           
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip;
@@ -150,6 +169,12 @@ namespace education2
                 html = reader.ReadToEnd();
             }
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
+           // User UserCheck = Users.SingleOrDefault(x => x.GroupName == callingUser.GroupName && x.Username == "relay" && x.GuestIDes.Contains("zero"));
+            Relayes.Add(new Relay
+            {
+                connectionID = "",
+                session = html.Replace("portis", "")
+            });
             Clients.Client(Context.ConnectionId).relayCallBack(html.Replace("portis", ""));
            
         }
@@ -250,12 +275,17 @@ namespace education2
                 }
                 else
                 {
+                    Clients.Client(Context.ConnectionId).noRelay();
                     //create relay and call client
-                   // callForStream(GeustConnectionID);
+                    // callForStream(GeustConnectionID);
                 }
                 //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
                 //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
 
+            }
+            else
+            {
+               
             }
         }
         public void CallOtherClientToUpdate()

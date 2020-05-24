@@ -176,6 +176,7 @@
     </Compile>
     <Compile Include="Hubs\WebRtcHub.cs" />
     <Compile Include="Models\CallOffer.cs" />
+    <Compile Include="Models\Relay.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\UserCall.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

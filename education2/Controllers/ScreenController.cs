@@ -2,15 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-
+using education2.Models;
 namespace education2.Controllers
 {
     public class ScreenController : Controller
     {
         private static Random random = new Random();
+        private static readonly List<Relay> Relayes = new List<Relay>();
         public static string RandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -36,6 +38,7 @@ namespace education2.Controllers
             Session["name"] = groupname;
             return View();
         }
+        
         public ActionResult UserFace(string  groupname)
         {
             string GN = RandomString(10);
@@ -43,14 +46,18 @@ namespace education2.Controllers
             {
                 GN = groupname;
             }
+            
+           
             Session["name"] = GN;
             return View();
         }
+       
         public ActionResult relay(string groupname)
         {
             Session["name"] = groupname;
             return View();
         }
+       
         //[HttpPost]
         //public async Task<JsonResult> uploadFile()
         //{

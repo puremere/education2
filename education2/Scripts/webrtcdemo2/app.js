@@ -180,6 +180,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                     }
             };
+            hub.client.noRelay = function () {
+                alertify.error("درحال آماده سازی سرور جهت اتصال، لطفاً اندکی بعد مجدداً تلاش کنید")
+            };
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
                 
@@ -207,20 +210,46 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 alertify.success(reason);
             };
             hub.client.changeYourClientVideo = function(IDes, relay){
+                console.log(_hostStream[relay]);
+                console.log(IDes);
 
                 _hostStream[relay] = IDes;
                 var list = IDes.split(',');
                 list.forEach(myFunction);
 
                 function myFunction(value, index, array) {
+                   // if (value != "zero" && value != viewModel.MyConnectionId()) {
                     if (value != "zero") {
+                        console.log(value);
+                        console.log(viewModel.MyConnectionId())
                         var id = relay + index;
                         console.log(id);
                         var video = document.getElementById(id)
-                        video.parentElement.style.display = "block";
+                        video.parentElement.style.display = "flex";
                     }
+                   
+
                     
                 };
+
+                var count = 0;
+                $(".slave").each(function (index, value) {
+                   
+                    if (`${this.style.display}` != "none") {
+                        count = count + 1;
+                    }
+                 
+                })
+                console.log(count);
+                if (count == 2) {
+                    $(".slave").css("width", "50%");
+                }
+                else if (count > 2 && count < 5) {
+                    $(".slave").css("width", "50%");
+                    $(".slave").css("height", "50%");
+                }
+               
+               
 
             };
             // Hub Callback: Incoming Call
@@ -290,6 +319,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 connectionManager.closeConnection(connectionId);
                 //_geustStream = "0";
                 $(".hangup").css("display", "none");
+                $(".joinAddress").css("display", "none")
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
             };
@@ -529,6 +559,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _attachUiHandlers();
 
                 viewModel.Loading(false);
+
             }, function (event) {
                 alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
                 viewModel.Loading(false);
@@ -712,6 +743,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Only allow hangup if we are not idle
                 $(".requst").css("display","inline-block")
                 $(".hangup").css("display","none")
+                $(".joinAddress").css("display","none")
                 if (viewModel.Mode() != 'idle') {
                     _hub.server.hangUp("");
                     connectionManager.closeAllConnections();
@@ -719,10 +751,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
             });
             $('.requst').click(function () {
-                $(".master").css("height", "100%");
-                $(".slave").css("width", "30%");
-                $(".slave").css("height", "30%");
-                $(".slave").css("position", "absolute");
+                //$(".master").css("height", "100%");
+                //$(".slave").css("width", "30%");
+                //$(".slave").css("height", "30%");
+                //$(".slave").css("position", "absolute");
                 _IAMDone = "";
                 _geustStream = "0";
                 _hub.server.hangUp("");
@@ -827,8 +859,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 $(".partnerholder").css("display", "inline-block");
                 $(".requst").css("display", "inline-block");
                 $(".hangup").css("display", "inline-block");
+              
+                $(".joinAddress").css("display", "inline-block");
                 
-            
+                
 
 
             },

@@ -56,11 +56,25 @@
                 <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
                 <span style="margin:10px auto; ">
                     <button style=" display:none;border-radius:10px;" class="btn btn-danger hangup">قطع تماس </button>
+                    <i id="pwd_spn" style="display:none; color:white; margin-top:10px">https://lecture.sup-ect.ir/screen/userface?groupname=<span data-bind="text:  Groupname"></span></i>
+                    <button style="display:none" id="cp_btn" class="btn btn-success joinAddress">آدرس اتصال</button>
                     <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success requst">درخواست اسکرین</button>
                     <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success chat">گفتگو </button>
                     <button style=" display:inline-block; border-radius:10px;outline:none " class="btn btn-success mycamera"><i class="fa fa-video-camera"></i> </button>
 
-
+                    <script>
+                        document.getElementById("cp_btn").addEventListener("click", copy_password);
+                        function copy_password() {
+                            var copyText = document.getElementById("pwd_spn");
+                            var textArea = document.createElement("textarea");
+                            textArea.value = copyText.textContent;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand("Copy");
+                            textArea.remove();
+                            alertify.success("آدرس اتصال کاربر کپی شد");
+                        }
+                    </script>
                 </span>
 
 
@@ -123,7 +137,7 @@
 
                         </div>*@
                     <div id="partnerholder" class="partnerholder" style=" ">
-                        <div class="master">
+                        <div class="slave">
                             <video  class="video mine cool-background" autoplay="autoplay"></video>
 
                         </div>
