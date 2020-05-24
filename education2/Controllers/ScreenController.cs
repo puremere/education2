@@ -38,8 +38,12 @@ namespace education2.Controllers
         }
         public ActionResult UserFace(string  groupname)
         {
-
-            Session["name"] = groupname;
+            string GN = RandomString(10);
+            if (groupname  != null)
+            {
+                GN = groupname;
+            }
+            Session["name"] = GN;
             return View();
         }
         public ActionResult relay(string groupname)

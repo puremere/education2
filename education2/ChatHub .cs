@@ -32,7 +32,7 @@ namespace education2
         private static readonly List<User> Users = new List<User>();
         private static readonly List<UserCall> UserCalls = new List<UserCall>();
         private static readonly List<CallOffer> CallOffers = new List<CallOffer>();
-        public static string isChnager = "";
+        
         public void Hang(string username)
         {
            
@@ -57,6 +57,7 @@ namespace education2
                     Username = username,
                     ConnectionId = Context.ConnectionId,
                     GroupName = groupname,
+                    GuestIDes = "zero,zero,zero",
                     Type = type
                 });
                 Groups.Add(Context.ConnectionId, groupname);
@@ -89,12 +90,23 @@ namespace education2
             SendUserListUpdate(Groupname);
         }
 
-        public void CallUser(string targetConnectionId,string type)
+        public void CallUser(string targetConnectionId,bool type)
         {
-            isChnager = type;
+            
             string groupname = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId).GroupName;
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
-            var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
+            List<string> srtlist = callingUser.GuestIDes.Split(',').ToList();
+            int indexof = callingUser.GuestIDes.IndexOf("zero");
+            srtlist[indexof] = targetConnectionId;
+            string finalstring = "";
+           foreach(var item in srtlist)
+            {
+                finalstring = finalstring + item + ",";
+            }
+            callingUser.GuestIDes = finalstring.Trim(',');
+
+
+             var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
 
             // Make sure the person we are trying to call is still here
             if (targetUser == null)
@@ -113,7 +125,7 @@ namespace education2
             //}
 
             // They are here, so tell them someone wants to talk
-            Clients.Client(targetConnectionId).incomingCall(callingUser);
+            Clients.Client(targetConnectionId).incomingCall(callingUser, type);
             
             // Create an offer
             CallOffers.Add(new CallOffer
@@ -171,7 +183,7 @@ namespace education2
         {
             Clients.Group(groupname).ShowYourVideo(index);
         }
-        public void AnswerCall(bool acceptCall, string targetConnectionId)
+        public void AnswerCall(bool acceptCall, string targetConnectionId,bool type)
         {
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
             var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
@@ -197,23 +209,6 @@ namespace education2
                 return;
             }
 
-            // Make sure there is still an active offer.  If there isn't, then the other use hung up before the Callee answered.
-            //var offerCount = CallOffers.RemoveAll(c => c.Callee.ConnectionId == callingUser.ConnectionId
-            //                                      && c.Caller.ConnectionId == targetUser.ConnectionId);
-            //if (offerCount < 1)
-            //{
-            //    Clients.Caller.callEnded(targetConnectionId, string.Format("{0} تماس را زودتر قطع کرده است.", targetUser.Username));
-            //    return;
-            //}
-
-            // And finally... make sure the user hasn't accepted another call already
-            //if (GetUserCall(targetUser.ConnectionId) != null)
-            //{
-            //    // And that they aren't already in a call
-            //    Clients.Caller.callDeclined(targetConnectionId, string.Format("{0} در حال تماس با فرد دیگری می باشد :(", targetUser.Username));
-            //    return;
-            //}
-
             // Remove all the other offers for the call initiator, in case they have multiple calls out
             CallOffers.RemoveAll(c => c.Caller.ConnectionId == targetUser.ConnectionId);
 
@@ -227,41 +222,85 @@ namespace education2
 
             // Tell the original caller that the call was accepted
             //.Client(Context.ConnectionId).alertID(isChnager);
-            Clients.Client(targetConnectionId).callAccepted(callingUser, isChnager, callingUser.Username);
+            
+           
+            Clients.Client(targetConnectionId).callAccepted(callingUser, type,callingUser.ConnectionId);
 
             // Update the user list, since thes two are now in a call
            // SendUserListUpdate("");
         }
 
-        public void callEveryOne(string GeustConnectionID)
+
+
+        public void CallForStream(string GeustConnectionID)
         {
+            
+
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
+           
             if (user != null)
             {
-                List<User> UserList = Users.Where(x => x.GroupName == user.GroupName && x.ConnectionId != user.ConnectionId && x.ConnectionId != GeustConnectionID ).ToList();
+                User UserList = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Username == "relay" && x.GuestIDes.Contains("zero"));
+               
                 
-                foreach ( User guest in UserList )
+
+                if (UserList != null)
                 {
-                    Clients.Client(guest.ConnectionId).callEveryOne(user.ConnectionId);
-                   
+                    Clients.Client(UserList.ConnectionId).callEveryOne(user.ConnectionId,true);
+                }
+                else
+                {
+                    //create relay and call client
+                   // callForStream(GeustConnectionID);
                 }
                 //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
                 //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
 
             }
         }
-        public void resPonseToCallEveryOne(string requestee)
+        public void CallOtherClientToUpdate()
+        {
+            User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
+            if (user != null)
+            {
+                List<User> relayList = Users.Where(x => x.GroupName == user.GroupName && x.Username == "relay" ).ToList();
+                
+                foreach ( User relay in relayList)
+                {
+                    List<User> userList = Users.Where(x => x.GroupName == user.GroupName && x.Username != "relay").ToList();
+                    foreach(var client in userList)
+                    {
+                        if (relay.GuestIDes.Contains(client.ConnectionId))
+                        {
+                            //inform user to change ints client video
+                            Clients.Client(client.ConnectionId).changeYourClientVideo(relay.GuestIDes,relay.ConnectionId);
+                            //go to relay and change video 
+                            Clients.Client(relay.ConnectionId).changeYourStreamFor(client.ConnectionId);
+                        }
+                        else
+                        {
+                            Clients.Client(client.ConnectionId).incomingCall(relay, false);
+                        }
+                    }
+                }
+                //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
+                //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
+
+            }
+        }
+        public void resPonseToCallEveryOne(string requestee, bool type)
         {
             
-            Clients.Client(requestee).areYouStillThere(Context.ConnectionId);
+             Clients.Client(requestee).areYouStillThere(Context.ConnectionId, type);
+            //StreamRequest(requestee, type);
         }
-        public void StreamRequest(string connectionID)
+        public void StreamRequest(string connectionID,bool type)
         {
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
                 User resposerUser = Users.SingleOrDefault(x => x.ConnectionId == connectionID);
-                Clients.Client(connectionID).GetStreamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), resposerUser.Username);
+                Clients.Client(connectionID).GetStreamRequest(user.ConnectionId, string.Format("{0} درخواست استریم دارد.", resposerUser.Username), type);
 
 
             }
@@ -405,7 +444,7 @@ namespace education2
             foreach (var item in List)
             {
                
-                CallUser(item, "");
+                CallUser(item, false);
             }
 
             

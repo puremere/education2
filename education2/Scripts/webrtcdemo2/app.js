@@ -144,6 +144,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         STes = [],
         _screenStream,
         _finalStream,
+        _hostStream = [],
         _geustStream = "0",
         _slaveNumber = 1,
         _streamType = 'blank',
@@ -190,15 +191,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     console.log("i am buisy")
                 }
             };
-            hub.client.areYouStillThere = function (responser) {
-                if (_IAMDone != true) {
-                    _IAMDone = true;
-                  
-                    console.log(responser);
-                    console.log("i am waiting please send stream");
-                    hub.server.streamRequest(responser);
-                   
-                }
+            hub.client.areYouStillThere = function (responser,type) {
+                console.log(responser);
+                console.log("i am waiting please send stream");
+                hub.server.streamRequest(responser,type);
             };
             hub.client.updateUserList = function (userList) {
 
@@ -210,14 +206,36 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
             };
+            hub.client.changeYourClientVideo = function(IDes, relay){
+
+                _hostStream[relay] = IDes;
+                var list = IDes.split(',');
+                list.forEach(myFunction);
+
+                function myFunction(value, index, array) {
+                    if (value != "zero") {
+                        var id = relay + index;
+                        console.log(id);
+                        var video = document.getElementById(id)
+                        video.parentElement.style.display = "block";
+                    }
+                    
+                };
+
+            };
             // Hub Callback: Incoming Call
-            hub.client.incomingCall = function (callingUser) {
+            hub.client.incomingCall = function (callingUser,type) {
                 console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
                // alertify.success( "تماس ورودی " + _geustStream)
-                if (callingUser.Username != 'relay') {
+                if (type == true) {
                     _streamType = "video"
+                    _hostStream[callingUser.ConnectionId] = callingUser.GuestIDes;
                 }
-                hub.server.answerCall(true, callingUser.ConnectionId);
+                else {
+                    _streamType = "blank"
+                }
+             
+                hub.server.answerCall(true, callingUser.ConnectionId,type);
                 viewModel.Mode('incall');
 
                 //// Ask if we want to talk
@@ -685,6 +703,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             // Add handler for the hangup button
             $('.hangup').click(function () {
+                $(".master").css("height", "100%");
+                $(".slave").css("width", "30%");
+                $(".slave").css("height", "30%");
+                $(".slave").css("position", "absolute");
                 _IAMDone = "";
                 _geustStream = "0";
                 // Only allow hangup if we are not idle
@@ -697,12 +719,17 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
             });
             $('.requst').click(function () {
+                $(".master").css("height", "100%");
+                $(".slave").css("width", "30%");
+                $(".slave").css("height", "30%");
+                $(".slave").css("position", "absolute");
                 _IAMDone = "";
                 _geustStream = "0";
                 _hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
-                _hub.server.callEveryOne(viewModel.guestConnectionId());
+                _hub.server.callForStream(viewModel.MyConnectionId);
                 alertify.success("درخواست شما ارسال شد");
+              
             });
             $(".submit").click(function () {
                 var message = $("#chatMessage").val();
@@ -763,13 +790,14 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     
                 //};
                 if (_streamType == 'video') {
+                    console.log("adding media stream");
                     _mediaStream.getTracks().forEach(function (track) {
 
                         connection.addTrack(track, st1);
                     });
                 }
                 else {
-                   
+                    console.log("adding blank");
                     blackSilence().getTracks().forEach(function (track) {
 
                         connection.addTrack(track, st1);
@@ -777,7 +805,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 }
 
                 
-                console.log("adding media stream");
+
                 //connection.addStream(_finalStream);
                
                 
@@ -804,17 +832,22 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
 
             },
-            onTrackAdded: function (connection, event) {
+            onTrackAdded: function (connection, event, partnerClientId) {
                // alertify.success("ontrack   "+_geustStream);
-               
-                if (_geustStream == "0") {
-                    _geustStream = "1";
-                    var otherVideo = document.querySelector('.video.partner');
-                    var otherVideo2 = document.querySelector('.video.partner2');
-                    var otherVideo3 = document.querySelector('.video.partner3');
-                  
-                    //_geustStream = event.stream;
-                    //_hasStream = "true";
+
+                var partnerClientId1 = partnerClientId + "0";
+                var partnerClientId2 = partnerClientId + "1";
+                var partnerClientId3 = partnerClientId + "2";
+
+                var isexist = document.getElementById(partnerClientId1);
+                if (isexist == null) {
+                    const div = document.createElement('div');
+                    div.className = 'slave';
+                    div.style.display = 'none';
+                    div.innerHTML = ` <video controls  id='` + partnerClientId1 + `' class='video partner cool-background' autoplay='autoplay'  ></video>  `;
+                    var VHolder = document.getElementById('partnerholder');
+                    VHolder.appendChild(div);
+
                     var st1 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {
@@ -824,13 +857,25 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                         }
 
                     }
+
+
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getAudioTracks()[0] != null) {
                             console.log("1 has audio")
                             st1.addTrack(event.streams[0].getAudioTracks()[0]);
                         }
                     }
-                   
+                    var otherVideo = document.getElementById(partnerClientId1);
+                    attachMediaStream(otherVideo, st1);
+                }
+
+                var isexist2 = document.getElementById(partnerClientId2);
+                if (isexist2 == null) {
+                    const div2 = document.createElement('div');
+                    div2.className = 'slave';
+                    div2.style.display = 'none';
+                    div2.innerHTML = ` <video controls  id='` + partnerClientId2 + `' class='video partner cool-background' autoplay='autoplay'  ></video>  `;
+                    VHolder.appendChild(div2);
 
                     var st2 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
@@ -847,8 +892,17 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                             st2.addTrack(event.streams[0].getAudioTracks()[1]);
                         }
                     }
+                    var otherVideo2 = document.getElementById(partnerClientId2);
+                    attachMediaStream(otherVideo2, st2);
+                 }
 
-                    
+                var isexist3 = document.getElementById(partnerClientId3);
+                if (isexist3 == null) {
+                    const div3 = document.createElement('div');
+                    div3.className = 'slave';
+                    div3.style.display = 'none';
+                    div3.innerHTML = ` <video controls  id='` + partnerClientId3 + `' class='video partner cool-background' autoplay='autoplay'  ></video>  `;
+                    VHolder.appendChild(div3);
 
                     var st3 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
@@ -865,26 +919,15 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                             st3.addTrack(event.streams[0].getAudioTracks()[2]);
                         }
                     }
-                   
-
-                   
-                    
-
-                    attachMediaStream(otherVideo, st1);
-                    attachMediaStream(otherVideo2, st2);
+                    var otherVideo3 = document.getElementById(partnerClientId3);
                     attachMediaStream(otherVideo3, st3);
-                 
-                    console.log("ontrack fired!");
-
-                    //if (_guestConnectionID != null) {
-                    //    connectionManager.sendSignal(_guestConnectionID, _RequestedStream);
-                    //    connectionManager.initiateOffer(_guestConnectionID, [_geustStream, _geustStream2], "1");
-                    //}
-
                 }
-                else {
-                    console.log("_getstream in no null");
-                }
+                
+                _hub.server.callOtherClientToUpdate();
+
+              
+               
+                
             
                
                 

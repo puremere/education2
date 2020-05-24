@@ -142,7 +142,9 @@ var WebRtcDemo = WebRtcDemo || {};
 WebRtcDemo.App = (function (viewModel, connectionManager) {
     var _hub,
         STes = [],
-        _screenStream,
+        guestIDes = ["0","0","0"],
+        SteamToGo = [blackSilence(), blackSilence(), blackSilence()],
+       
         _finalStream,
         _geustStream,
         _geustStream2,
@@ -178,20 +180,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 }
             };
-            hub.client.callEveryOne = function (connectionID) {
+            hub.client.callEveryOne = function (connectionID,type) {
                 console.log("i am called");
-                console.log(Result);
+                console.log(connectionID);
+                console.log(type);
 
-                hub.server.resPonseToCallEveryOne(connectionID);
+                hub.server.resPonseToCallEveryOne(connectionID, type);
                 console.log("i have stream are you ready")
                
             };
-            hub.client.areYouStillThere = function (responser) {
+            hub.client.areYouStillThere = function (responser,type) {
                 if (_IAMDone != true) {
                     _IAMDone = true;
                     console.log(responser);
                     alertify.success("i am waiting please send stream");
-                    hub.server.streamRequest(responser);
+                    hub.server.streamRequest(responser,type);
 
                 }
             };
@@ -199,10 +202,31 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 viewModel.setUsers(userList);
             };
-            hub.client.GetStreamRequest = function (connectionId, reason) {
+            hub.client.GetStreamRequest = function (connectionId, reason, type) {
                 _RequestedStream = 'blank';
-                _hub.server.callUser(connectionId, "");
+                _hub.server.callUser(connectionId, type);
                 alertify.success(reason);
+            };
+            hub.client.changeYourStreamFor = function (AimConnectionId) {
+                console.log("changing stream for " + AimConnectionId);
+                
+                stateChange(-1);
+                function stateChange(newState) {
+                    setTimeout(function () {
+                        if (newState == -1) {
+                            console.log(guestIDes[0]);
+                            if (guestIDes.includes(AimConnectionId)) {
+                                console.log("it is");
+                                connectionManager.changeTrack(SteamToGo, AimConnectionId);
+                            } else {
+                                console.log("it is not");
+                            }
+                        }
+                    }, 1000);
+                }
+                
+                
+                
             };
             // Hub Callback: Incoming Call
             hub.client.incomingCall = function (callingUser) {
@@ -227,14 +251,21 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
 
             // Hub Callback: Call Accepted
-            hub.client.callAccepted = function (acceptingUser) {
+            hub.client.callAccepted = function (acceptingUser, type,connectionID) {
 
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
-               
-                _geustStream = "1";
+                if (type == true) {
+                    var index = guestIDes.indexOf("0");
+                    console.log(index);
+                    console.log(connectionID);
+                    guestIDes[index] = connectionID;
+                    console.log(guestIDes[index]);
+                  //  guestIDes.push();
+                }
+
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
-                viewModel.guestConnectionId(acceptingUser.ConnectionId);
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, STes, "1");
+                
+                connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
                 //connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
 
                 // Set UI into call mode
@@ -494,11 +525,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Hook up the UI
                 _attachUiHandlers();
                 viewModel.Loading(false);
-                _IAMDone = "";
-                _geustStream = "0";
-                hub.server.hangUp("");
-                connectionManager.closeAllConnections(viewModel.guestConnectionId());
-                hub.server.callEveryOne(viewModel.guestConnectionId());
+       
             }, function (event) {
                 alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
                 viewModel.Loading(false);
@@ -689,22 +716,22 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
 
             },
-            onStreamAdded: function (connection, event) {
-                console.log('binding remote stream to the partner window');
+            onStreamAdded: function (connection, event, partnerClientId) {
 
-                // Bind the remote stream to the partner window
+                console.log("onstream added by " + partnerClientId);
 
-
-                //var otherVideo = document.querySelector('.video.partner');
-
-                //attachMediaStream(otherVideo, event.stream); // from adapter.js
-                $(".partnerholder").css("display", "inline-block");
-                $(".requst").css("display", "inline-block");
-                $(".hangup").css("display", "inline-block");
+                if (guestIDes.includes(partnerClientId)) {
 
 
 
+                    var index = guestIDes.indexOf(partnerClientId);
 
+                     console.log("on track added fire");
+                    
+                    console.log(index + "is full");
+                    SteamToGo[index] = event.stream;
+
+                }
             },
             onTrackAdded: function (connection, event) {
 

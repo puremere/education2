@@ -83,7 +83,7 @@ WebRtcDemo.ConnectionManager = (function () {
             };
             connection.ontrack = function (event) {
                 console.log('WebRTC: adding track');
-                _onTrackAddedCallback(connection, event);
+                _onTrackAddedCallback(connection, event,partnerClientId);
 
             }
 
