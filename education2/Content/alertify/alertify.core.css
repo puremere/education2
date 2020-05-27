@@ -54,6 +54,7 @@
 	bottom: 10px;
 	right: 10px;
 	width: 300px;
+    text-align:right
 }
 .alertify-logs-hidden {
 	display: none;
@@ -94,7 +95,7 @@
 			width: 1px;
 		}
 		.alertify-inner {
-			text-align: center;
+			text-align: right;
 		}
 		.alertify-text {
 			margin-bottom: 15px;

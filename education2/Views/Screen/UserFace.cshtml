@@ -51,16 +51,17 @@
     <!-- Top Bar -->
     <div class="navbar navbar-inverse navbar-fixed-top" style="margin-bottom: 0px;position: relative;">
         <div class="navbar-inner">
-            <div class="container-fluid" style="display:flex;padding:0; ">
+            <div class="container-fluid" style="display:flex;padding:0; align-items:center ">
 
                 <span class="loading-indicator icon-spinner-3" data-bind="css: { on: Loading }"></span>
-                <span style="margin:10px auto; ">
-                    <button style=" display:none;border-radius:10px;" class="btn btn-danger hangup">قطع تماس </button>
-                    <i id="pwd_spn" style="display:none; color:white; margin-top:10px">https://lecture.sup-ect.ir/screen/userface?groupname=<span data-bind="text:  Groupname"></span></i>
-                    <button style="display:none" id="cp_btn" class="btn btn-success joinAddress">آدرس اتصال</button>
-                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success requst">درخواست اسکرین</button>
-                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success chat">گفتگو </button>
+                <span style="margin:10px auto; direction:rtl">
+                    
                     <button style=" display:inline-block; border-radius:10px;outline:none " class="btn btn-success mycamera"><i class="fa fa-video-camera"></i> </button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success chat"><i class="fa fa-file-text"></i> </button>
+                    <button style=" display:inline-block; border-radius:10px; outline:none" class="btn btn-success requst"><i class="fa fa-plug"></i></button>
+                    <button style="display:none; border-radius:10px; outline:none"" id="cp_btn" class="btn btn-success joinAddress"><i class="fa fa-home"></i></button>
+                    <button style=" display:none;border-radius:10px;" class="btn btn-danger hangup"><i class="fa fa-power-off"></i> </button>
+                    <i id="pwd_spn" style="display:none; color:white; margin-top:10px">https://lecture.sup-ect.ir/screen/userface?groupname=<span data-bind="text:  Groupname"></span></i>
 
                     <script>
                         document.getElementById("cp_btn").addEventListener("click", copy_password);
@@ -138,10 +139,10 @@
                         </div>*@
                     <div id="partnerholder" class="partnerholder" style=" ">
                         <div class="slave">
-                            <video  class="video mine cool-background" autoplay="autoplay"></video>
+                            <video class="video mine cool-background" autoplay="autoplay" muted></video>
 
                         </div>
-                       
+
                     </div>
                     @*<div class="partnerholder2">
                             <video controls class="video partner2 cool-background" autoplay="autoplay"></video>
@@ -231,24 +232,24 @@
 
     @if (!Request.Browser.IsMobileDevice)
     {
-    <script>
-        $("video").click(function () {
+        @*<script>
+            $("video").click(function () {
 
-            if (!$(this).parent().hasClass("master")) {
+                if (!$(this).parent().hasClass("master")) {
 
-                var master = $(".master");
-                master.removeClass("master");
-                master.addClass("slave");
+                    var master = $(".master");
+                    master.removeClass("master");
+                    master.addClass("slave");
 
-                $(this).parent().removeClass("slave");
-                $(this).parent().addClass("master")
-            }
+                    $(this).parent().removeClass("slave");
+                    $(this).parent().addClass("master")
+                }
 
 
-        })
-    </script>
+            })
+        </script>*@
     }
-    
+
 
     <script src="/Scripts/webrtcdemo2/viewModel.js"></script>
     <script src="/Scripts/webrtcdemo2/connectionManager.js"></script>
@@ -258,6 +259,7 @@
         WebRtcDemo.App.setName('@Session["name"]');
 
     </script>
+   
     <!-- Analytics -->
     <script type="text/javascript">
         var _gaq = _gaq || [];

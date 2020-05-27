@@ -152,7 +152,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 connectionManager.sendSignal(acceptingUser.ConnectionId, _RequestedStream);
                 
-                connectionManager.initiateOffer(acceptingUser.ConnectionId, SteamToGo);
+                connectionManager.initiateOffer(acceptingUser.ConnectionId,  [blackSilence(), blackSilence(), blackSilence()]);
                 //connectionManager.initiateOffer(acceptingUser.ConnectionId, _mediaStream);
 
                 // Set UI into call mode
@@ -171,6 +171,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             };
 
             // Hub Callback: Call Ended
+
             hub.client.callEnded = function (connectionId, reason) {
                 console.log('تماس با ' + connectionId + ' پایان یافت: ' + reason);
 
@@ -179,8 +180,13 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // alertify.error(reason);
 
                 // Close the WebRTC connection
+
+                var index = guestIDes.indexOf(connectionId)
+                guestIDes[index] = "0";
+                SteamToGo[index] = blackSilence();
+
                 connectionManager.closeConnection(connectionId);
-                //_geustStream = null;
+                _geustStream = "0";
                 $(".hangup").css("display", "none");
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
@@ -412,6 +418,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Hook up the UI
                 _attachUiHandlers();
                 viewModel.Loading(false);
+                setInterval(function () {
+                    hub.server.checkUserExist();
+                }, 8000);
        
             }, function (event) {
                 alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));

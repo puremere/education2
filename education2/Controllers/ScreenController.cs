@@ -51,7 +51,9 @@ namespace education2.Controllers
             Session["name"] = GN;
             return View();
         }
-       
+        public void checkForUser() {
+            int id = 0;
+        }
         public ActionResult relay(string groupname)
         {
             Session["name"] = groupname;

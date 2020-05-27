@@ -181,7 +181,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
             };
             hub.client.noRelay = function () {
-                alertify.error("درحال آماده سازی سرور جهت اتصال، لطفاً اندکی بعد مجدداً تلاش کنید")
+                alertify.success("سرور در حال پردازش اطلاعات میباشد! لطفاً پس از اندکی تامل از دکمه اتصال منوی بالا استفاده نمایید")
             };
             hub.client.callEveryOne = function (connectionID) {
                 console.log("i am called");
@@ -218,8 +218,8 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 list.forEach(myFunction);
 
                 function myFunction(value, index, array) {
-                   // if (value != "zero" && value != viewModel.MyConnectionId()) {
-                    if (value != "zero") {
+                    if (value != "zero" && value != viewModel.MyConnectionId()) {
+                  //  if (value != "zero") {
                         console.log(value);
                         console.log(viewModel.MyConnectionId())
                         var id = relay + index;
@@ -241,12 +241,32 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                  
                 })
                 console.log(count);
-                if (count == 2) {
-                    $(".slave").css("width", "50%");
+                var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                var amount = "width"
+                if (isMobile) {
+                    amount = "height";
+                }
+                if (count == 2 ) {
+                    $(".slave").css(amount, "50%");
                 }
                 else if (count > 2 && count < 5) {
+                   
                     $(".slave").css("width", "50%");
                     $(".slave").css("height", "50%");
+                    console.log(count % 2)
+                    if (count % 2 == 1) {
+                        let finalIndex = 0;
+                        $(".slave").each(function (index, value) {
+
+                            if (`${this.style.display}` != "none") {
+                                finalIndex = index;
+                            }
+
+                        })
+                       // var element = document.querySelectorAll(".slave:last");
+                        $(".slave::nth-child(" + finalIndex +")").last().css("width", "100%");
+                      
+                    }
                 }
                
                
@@ -559,6 +579,11 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _attachUiHandlers();
 
                 viewModel.Loading(false);
+                _IAMDone = "";
+                _geustStream = "0";
+               
+                _hub.server.callForStream(viewModel.MyConnectionId());
+              //  alertify.success("درخواست تصویر ارسال شد!! ");
 
             }, function (event) {
                 alertify.alert('<h4>Failed SignalR Connection</h4> We were not able to connect you to the signaling server.<br/><br/>Error: ' + JSON.stringify(event));
@@ -585,71 +610,71 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             if (isMobile) {
-                $(".slave").click(function () {
-                    if (_slaveNumber > 1) {
+                //$(".slave").click(function () {
+                //    if (_slaveNumber > 1) {
                        
-                        if ($(this).width() != screen.width || screen.height -  $(this).height() + $(".container-fluid").height() > 100 ) {
+                //        if ($(this).width() != screen.width || screen.height -  $(this).height() + $(".container-fluid").height() > 100 ) {
 
-                            $(this).css("width", "100%");
-                            $(this).css("height", "100%");
-                            $(this).css("position", "absolute");
-                            $(this).css("z-index", "9");
-                            $(this).css("overflow", "none");
-                            $(".slave video").css("object-fit", "contain");
+                //            $(this).css("width", "100%");
+                //            $(this).css("height", "100%");
+                //            $(this).css("position", "absolute");
+                //            $(this).css("z-index", "9");
+                //            $(this).css("overflow", "none");
+                //            $(".slave video").css("object-fit", "contain");
                             
-                        }
-                        else {
-                            $(this).css("width", "50%");
-                            $(this).css("height", "50%");
-                            $(this).css("position", "relative");
-                            $(this).css("z-index", "1");
-                            $(this).css("overflow", "hidden");
-                            $(".slave video").css("object-fit", "cover");
+                //        }
+                //        else {
+                //            $(this).css("width", "50%");
+                //            $(this).css("height", "50%");
+                //            $(this).css("position", "relative");
+                //            $(this).css("z-index", "1");
+                //            $(this).css("overflow", "hidden");
+                //            $(".slave video").css("object-fit", "cover");
                            
-                        }
-                    }
-                })
-                $(".master").click(function () {
+                //        }
+                //    }
+                //})
+                //$(".master").click(function () {
                   
-                    if (_slaveNumber == 1) {
+                //    if (_slaveNumber == 1) {
                      
-                        if ($(this).width() != screen.width) {
+                //        if ($(this).width() != screen.width) {
 
-                            $(this).css("position", "relative");
-                            $(this).css("width", "100%");
-                            $(this).css("z-index", "0");
+                //            $(this).css("position", "relative");
+                //            $(this).css("width", "100%");
+                //            $(this).css("z-index", "0");
                          
-                        }
-                        else {
-                            $(this).css("position", "absolute");
-                            $(this).css("width", "101%");
-                            $(this).css("z-index", "9");
+                //        }
+                //        else {
+                //            $(this).css("position", "absolute");
+                //            $(this).css("width", "101%");
+                //            $(this).css("z-index", "9");
                            
 
-                        }
-                    }
-                    else if (_slaveNumber == 2) {
-                        if ($(this).width() != screen.width || screen.height - $(this).height() + $(".container-fluid").height() > 100) {
+                //        }
+                //    }
+                //    else if (_slaveNumber == 2) {
+                //        if ($(this).width() != screen.width || screen.height - $(this).height() + $(".container-fluid").height() > 100) {
 
-                            $(this).css("width", "100%");
-                            $(this).css("height", "100%");
-                            $(this).css("position", "absolute");
-                            $(this).css("z-index", "9");
-                            $(this).css("overflow", "none");
-                            $(this).css("object-fit", "scale-down");
+                //            $(this).css("width", "100%");
+                //            $(this).css("height", "100%");
+                //            $(this).css("position", "absolute");
+                //            $(this).css("z-index", "9");
+                //            $(this).css("overflow", "none");
+                //            $(this).css("object-fit", "scale-down");
 
-                        }
-                        else {
-                            $(this).css("width", "100%");
-                            $(this).css("height", "50%");
-                            $(this).css("position", "relative");
-                            $(this).css("z-index", "1");
-                            $(this).css("overflow", "hidden");
-                            $(this).css("object-fit", "cover");
+                //        }
+                //        else {
+                //            $(this).css("width", "100%");
+                //            $(this).css("height", "50%");
+                //            $(this).css("position", "relative");
+                //            $(this).css("z-index", "1");
+                //            $(this).css("overflow", "hidden");
+                //            $(this).css("object-fit", "cover");
 
-                        }
-                    }
-                });
+                //        }
+                //    }
+                //});
             }
 
             $(".mycamera").click(function () {
@@ -709,6 +734,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                
                
             });
+
             // Add click handler to users in the "Users" pane
             $('.user').live('click', function () {
                 // Find the target user's SignalR client id
@@ -734,21 +760,26 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
             // Add handler for the hangup button
             $('.hangup').click(function () {
-                $(".master").css("height", "100%");
-                $(".slave").css("width", "30%");
-                $(".slave").css("height", "30%");
-                $(".slave").css("position", "absolute");
+                //$(".master").css("height", "100%");
+                //$(".slave").css("width", "30%");
+                //$(".slave").css("height", "30%");
+                //$(".slave").css("position", "absolute");
                 _IAMDone = "";
                 _geustStream = "0";
-                // Only allow hangup if we are not idle
-                $(".requst").css("display","inline-block")
-                $(".hangup").css("display","none")
-                $(".joinAddress").css("display","none")
-                if (viewModel.Mode() != 'idle') {
-                    _hub.server.hangUp("");
-                    connectionManager.closeAllConnections();
-                    viewModel.Mode('idle');
-                }
+              
+               
+                _hub.server.hangUp("");
+                connectionManager.closeAllConnections();
+                viewModel.Mode ('idle');
+                $(".requst").css("display", "inline-block")
+                $(".hangup").css("display", "none")
+                $(".joinAddress").css("display", "none")
+
+                $(".slave").css("width", "100%")
+                $(".slave").css("height", "100%")
+
+
+
             });
             $('.requst').click(function () {
                 //$(".master").css("height", "100%");
@@ -759,8 +790,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _geustStream = "0";
                 _hub.server.hangUp("");
                 connectionManager.closeAllConnections(viewModel.guestConnectionId());
-                _hub.server.callForStream(viewModel.MyConnectionId);
+                _hub.server.callForStream(viewModel.MyConnectionId());
                 alertify.success("درخواست شما ارسال شد");
+                $(".slave").css("width", "100%")
+                $(".slave").css("height", "100%")
               
             });
             $(".submit").click(function () {
@@ -868,7 +901,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             },
             onTrackAdded: function (connection, event, partnerClientId) {
                // alertify.success("ontrack   "+_geustStream);
-
+                console.log("adding track on app");
                 var partnerClientId1 = partnerClientId + "0";
                 var partnerClientId2 = partnerClientId + "1";
                 var partnerClientId3 = partnerClientId + "2";
@@ -882,6 +915,27 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     var VHolder = document.getElementById('partnerholder');
                     VHolder.appendChild(div);
 
+                    var st1 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[0] != null) {
+                            console.log("1 has video")
+                            st1.addTrack(event.streams[0].getVideoTracks()[0]);
+
+                        }
+
+                    }
+
+
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getAudioTracks()[0] != null) {
+                            console.log("1 has audio")
+                            st1.addTrack(event.streams[0].getAudioTracks()[0]);
+                        }
+                    }
+                    var otherVideo = document.getElementById(partnerClientId1);
+                    attachMediaStream(otherVideo, st1);
+                }
+                else {
                     var st1 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[0] != null) {
@@ -928,7 +982,26 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     }
                     var otherVideo2 = document.getElementById(partnerClientId2);
                     attachMediaStream(otherVideo2, st2);
-                 }
+                }
+                else {
+                    var st2 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[1] != null) {
+                            console.log("2 has video")
+                            st2.addTrack(event.streams[0].getVideoTracks()[1]);
+
+                        }
+                    }
+                    if (event.streams[0].getVideoTracks() != null) {
+
+                        if (event.streams[0].getAudioTracks()[1] != null) {
+                            console.log("2 has audio")
+                            st2.addTrack(event.streams[0].getAudioTracks()[1]);
+                        }
+                    }
+                    var otherVideo2 = document.getElementById(partnerClientId2);
+                    attachMediaStream(otherVideo2, st2);
+                }
 
                 var isexist3 = document.getElementById(partnerClientId3);
                 if (isexist3 == null) {
@@ -938,6 +1011,25 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     div3.innerHTML = ` <video controls  id='` + partnerClientId3 + `' class='video partner cool-background' autoplay='autoplay'  ></video>  `;
                     VHolder.appendChild(div3);
 
+                    var st3 = new MediaStream();
+                    if (event.streams[0].getVideoTracks() != null) {
+                        if (event.streams[0].getVideoTracks()[2] != null) {
+                            console.log("3 has video")
+                            st3.addTrack(event.streams[0].getVideoTracks()[2]);
+
+                        }
+                    }
+                    if (event.streams[0].getVideoTracks() != null) {
+
+                        if (event.streams[0].getAudioTracks()[2] != null) {
+                            console.log("3 has audio")
+                            st3.addTrack(event.streams[0].getAudioTracks()[2]);
+                        }
+                    }
+                    var otherVideo3 = document.getElementById(partnerClientId3);
+                    attachMediaStream(otherVideo3, st3);
+                }
+                else {
                     var st3 = new MediaStream();
                     if (event.streams[0].getVideoTracks() != null) {
                         if (event.streams[0].getVideoTracks()[2] != null) {

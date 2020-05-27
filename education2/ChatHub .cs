@@ -90,10 +90,31 @@ namespace education2
             Users.RemoveAll(u => u.ConnectionId == Context.ConnectionId);
             string Groupname = Users.FirstOrDefault(u => u.ConnectionId == Context.ConnectionId).GroupName;
             Groups.Remove(Context.ConnectionId, groupname);
+
+            
+
+
             // Send down the new user list to all clients
             SendUserListUpdate(Groupname);
 
             return base.OnDisconnected(boolian);
+        }
+        public void CheckUserExist()
+        {
+            
+            if (Users.SingleOrDefault(x => x.Username != "relay") == null)
+            {
+
+                foreach (var item in Relayes)
+                {
+                    KillRelay(item.session);
+                }
+            }
+            else
+            {
+                int i = 0;
+            }
+            
         }
         public void DeleteRelayFromList()
         {
@@ -108,7 +129,7 @@ namespace education2
             string groupname = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId).GroupName;
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
             List<string> srtlist = callingUser.GuestIDes.Split(',').ToList();
-            int indexof = callingUser.GuestIDes.IndexOf("zero");
+            int indexof = srtlist.IndexOf("zero");
             srtlist[indexof] = targetConnectionId;
             string finalstring = "";
            foreach(var item in srtlist)
@@ -156,9 +177,9 @@ namespace education2
         public void SendRelay(string groupname)
         {
             string html = string.Empty;
-             string url = @"http://localhost:8082/openChrome?groupname="+ groupname;
-            // string url = @"http://95.217.162.188:8082/openChrome?groupname=123";
-          
+            // string url = @"http://localhost:8081/openChrome?groupname=" + groupname ;
+             string url = @"http://95.217.162.188:8081/openChrome?groupname=" + groupname;
+
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip;
 
@@ -181,7 +202,8 @@ namespace education2
         public void KillRelay(string id)
         {
             string html = string.Empty;
-            string url = @"http://95.217.162.188:8083/closeChrome?id=" + id;
+            string url = @"http://95.217.162.188:8082/closeChrome?id=" + id;
+          //  string url = @"http://localhost:8083/closeChrome?id=" + id;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.AutomaticDecompression = DecompressionMethods.GZip;
@@ -366,7 +388,22 @@ namespace education2
 
                         foreach (var user in call.Users.Where(u => u.ConnectionId != callingUser.ConnectionId))
                         {
+                               user.GuestIDes = user.GuestIDes.Replace(callingUser.ConnectionId, "zero");
                                Clients.Client(user.ConnectionId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
+
+                            List<string> clientlist = callingUser.GuestIDes.Split(',').ToList();
+                            foreach(var client in clientlist)
+                            {
+                                if (client != "zero" )
+                                {
+                                    //inform user to change ints client video
+                                    Clients.Client(client).changeYourClientVideo(user.GuestIDes, user.ConnectionId);
+                                    //go to relay and change video 
+                                    Clients.Client(user.ConnectionId).changeYourStreamFor(client);
+                                }
+                            }
+
+                           
                         }
                     }
                    
