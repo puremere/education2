@@ -236,6 +236,16 @@ WebRtcDemo.ConnectionManager = (function () {
 
             _signaler.sendSignalForStream(signal, partnerClientId);
         },
+        _ConnectionIsExist = function (partnerClientId)
+        {
+            if (_connections[partnerClientId] != null) {
+                return true;
+            }
+            else {
+                return false;
+            }
+          
+        },
         _changeTrack = function (STES, selectedID) {
             for (var connectionId in _connections) {
                 //if (connectionId != selectedID)
@@ -305,7 +315,8 @@ WebRtcDemo.ConnectionManager = (function () {
         closeAllConnections: _closeAllConnections,
         initiateOffer: _initiateOffer,
         sendSignal: _sendSignal,
-        changeTrack: _changeTrack
+        changeTrack: _changeTrack,
+        connectionIsExist: _ConnectionIsExist
 
     };
 })();

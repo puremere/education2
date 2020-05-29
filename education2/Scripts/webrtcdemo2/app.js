@@ -209,6 +209,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _hub.server.callUser(connectionId, "");
                 alertify.success(reason);
             };
+           
             hub.client.changeYourClientVideo = function(IDes, relay){
                 console.log(_hostStream[relay]);
                 console.log(IDes);
@@ -216,16 +217,26 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _hostStream[relay] = IDes;
                 var list = IDes.split(',');
                 list.forEach(myFunction);
-
+               // $(".slave").css("display","none")
                 function myFunction(value, index, array) {
-                    if (value != "zero" && value != viewModel.MyConnectionId()) {
-                  //  if (value != "zero") {
+                    //if (value != "null" && value != viewModel.MyConnectionId()) {
+                    if (value != "null") {
                         console.log(value);
                         console.log(viewModel.MyConnectionId())
                         var id = relay + index;
                         console.log(id);
-                        var video = document.getElementById(id)
-                        video.parentElement.style.display = "flex";
+                        var video = document.getElementById(id);
+                       
+                        video.parentElement.style.display = "inline-block";
+                    }
+                    else {
+                        console.log(value);
+                        console.log(viewModel.MyConnectionId())
+                        var id = relay + index;
+                        console.log(id);
+                        var video = document.getElementById(id);
+                     
+                        video.parentElement.style.display = "none";
                     }
                    
 
@@ -243,30 +254,56 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 console.log(count);
                 var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 var amount = "width"
-                if (isMobile) {
-                    amount = "height";
+
+                if (count == 0) {
+                    $(".slave").each(function () {
+                        $(this).removeAttr('class');
+                        $(this).addClass("slave")
+                    
+                    
+                    })
+                    $(".master").each(function () {
+                        $(this).removeAttr('class');
+                        $(this).addClass("master");
+                     
+                    })
                 }
-                if (count == 2 ) {
-                    $(".slave").css(amount, "50%");
+                if (count == 1) {
+                    $(".slave").each(function () {
+                        
+                        $(this).addClass("slave1")
+                    });
+                    $(".master").each(function () {
+                        $(this).addClass("master1")
+                    });
+                    
                 }
-                else if (count > 2 && count < 5) {
+                else if (count >= 2 && count < 4) {
                    
-                    $(".slave").css("width", "50%");
-                    $(".slave").css("height", "50%");
+                    $(".slave").each(function () {
+                        $(this).removeAttr('class');
+                        $(this).addClass("slave");   
+                        $(this).addClass("slave2")
+                    });
+                    $(".master").each(function () {
+                        $(this).removeAttr('class');
+                        $(this).addClass("master");
+                        $(this).addClass("master2")
+                    });
                     console.log(count % 2)
-                    if (count % 2 == 1) {
-                        let finalIndex = 0;
-                        $(".slave").each(function (index, value) {
+                    //if (count % 2 == 1) {
+                    //    let finalIndex = 0;
+                    //    $(".slave").each(function (index, value) {
 
-                            if (`${this.style.display}` != "none") {
-                                finalIndex = index;
-                            }
+                    //        if (`${this.style.display}` != "none") {
+                    //            finalIndex = index;
+                    //        }
 
-                        })
-                       // var element = document.querySelectorAll(".slave:last");
-                        $(".slave::nth-child(" + finalIndex +")").last().css("width", "100%");
+                    //    })
+                    //   // var element = document.querySelectorAll(".slave:last");
+                    //    $(".slave::nth-child(" + finalIndex +")").last().css("width", "100%");
                       
-                    }
+                    //}
                 }
                
                
@@ -774,9 +811,19 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 $(".requst").css("display", "inline-block")
                 $(".hangup").css("display", "none")
                 $(".joinAddress").css("display", "none")
+                $(".master").each(function () {
 
-                $(".slave").css("width", "100%")
-                $(".slave").css("height", "100%")
+                    $(this).removeAttr('class');
+                    $(this).addClass("master");
+
+                });
+                $(".slave").each(function () {
+                    $(this).removeAttr('class');
+                    $(this).addClass("slave")
+
+
+                });
+             
 
 
 
@@ -1049,7 +1096,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     attachMediaStream(otherVideo3, st3);
                 }
                 
-                _hub.server.callOtherClientToUpdate();
+               
 
               
                

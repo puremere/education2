@@ -29,7 +29,7 @@ var WebRtcDemo = WebRtcDemo || {};
 WebRtcDemo.App = (function (viewModel, connectionManager) {
     var _hub,
         STes = [],
-        guestIDes = ["0","0","0"],
+        guestIDes = [],
         SteamToGo = [blackSilence(), blackSilence(), blackSilence()],
        
         _finalStream,
@@ -94,27 +94,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 _hub.server.callUser(connectionId, type);
                 alertify.success(reason);
             };
-            hub.client.changeYourStreamFor = function (AimConnectionId) {
-                console.log("changing stream for " + AimConnectionId);
-                
-                stateChange(-1);
-                function stateChange(newState) {
-                    setTimeout(function () {
-                        if (newState == -1) {
-                            console.log(guestIDes[0]);
-                            if (guestIDes.includes(AimConnectionId)) {
-                                console.log("it is");
-                                connectionManager.changeTrack(SteamToGo, AimConnectionId);
-                            } else {
-                                console.log("it is not");
-                            }
-                        }
-                    }, 1000);
-                }
-                
-                
-                
-            };
+           
             // Hub Callback: Incoming Call
             hub.client.incomingCall = function (callingUser) {
                 console.log('تماس ورودی از طرف: ' + JSON.stringify(callingUser));
@@ -142,11 +122,20 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
 
                 console.log('پذیرفته شدن تماس از طرف : ' + JSON.stringify(acceptingUser) + '.  ');
                 if (type == true) {
-                    var index = guestIDes.indexOf("0");
+                    var index = guestIDes.indexOf("null");
                     console.log(index);
                     console.log(connectionID);
                     guestIDes[index] = connectionID;
                     console.log(guestIDes[index]);
+                    if (guestIDes.includes("null")) {
+                      
+                    }
+                    else {
+                        console.log("no more connection ")
+                        hub.server.changeRelayStat("1");
+
+                    }
+                    // open relay befor next calling 
                   //  guestIDes.push();
                 }
 
@@ -182,16 +171,49 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Close the WebRTC connection
 
                 var index = guestIDes.indexOf(connectionId)
-                guestIDes[index] = "0";
+                guestIDes[index] = "null";
                 SteamToGo[index] = blackSilence();
 
                 connectionManager.closeConnection(connectionId);
+                hub.server.changeRelayStat("0");
+                hub.server.callOtherClientToUpdate(viewModel.MyConnectionId());
+
+
                 _geustStream = "0";
                 $(".hangup").css("display", "none");
                 // Set the UI back into idle mode
                 viewModel.Mode('idle');
             };
+            hub.client.doWhatYoutThinkIsRight = function (connectionId){
+                console.log("check User: " + connectionId)
+                if (connectionManager.connectionIsExist(connectionId))
+                {
+                   
+                    console.log("changing stream for " + connectionId);
+                    hub.server.callUserTochangeVideo(connectionId, guestIDes.toString(), viewModel.MyConnectionId());
+                    stateChange(-1);
+                    function stateChange(newState) {
+                        setTimeout(function () {
+                            if (newState == -1) {
+                                console.log(guestIDes[0]);
+                                if (guestIDes.includes(connectionId)) {
+                                    console.log("it is");
+                                    connectionManager.changeTrack(SteamToGo, connectionId);
+                                } else {
+                                    console.log("it is not");
+                                }
+                            }
+                        }, 1000);
+                    }
 
+                }
+                else {
+                    console.log(connectionId + " has not connection")
+                    _hub.server.callUser(connectionId);
+                }
+               
+
+            };
             // Hub Callback: Update User List
             hub.client.changeStream = function (stream, acceptingUser) {
                 console.log(stream);
@@ -302,18 +324,6 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
         _getUsername = function (type) {
             console.log("getusername-" + type);
             _startSession('relay');
-            //alertify.prompt(" نام شما ؟", function (e, username) {
-            //    if (e == false || username == '') {
-            //        //username = 'کاربر ' + Math.floor((Math.random() * 10000) + 1);
-            //        alertify.success('جهت اتصال باید نام کلاس را وارد کنید');
-            //    }
-            //    else {
-                    
-            //    }
-
-            //    // proceed to next step, get media access and start up our connection
-
-            //}, '');
         },
 
         _startSession = function (username) {
@@ -323,73 +333,10 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
             viewModel.Loading(true); // Turn on the loading indicator
             $('.instructions').hide();
             var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            //if (!isMobile) {
-
-            //    navigator.mediaDevices.getDisplayMedia({
-            //        video: {
-            //            cursor: "always"
-            //        },
-            //        audio: true
-            //    }).then(
-
-            //        stream => {
-            //            console.log("screen is awesom");
-            //            var videoScreen = document.querySelector('.video.screen');
-            //            _screenStream = stream;
-
-
-            //           // attachMediaStream(videoScreen, _screenStream);
-
-            //        },
-            //        error => {
-            //            console.log("Unable to acquire screen capture", error);
-            //            viewModel.Loading(false);
-            //        });
-
-            //}
-            //else {
-            //    $('.video.screen').css("display", "none");
-            //};
-
-
-            //getUserMedia(
-            //    {
-            //        // Permissions to request
-            //        video: {
-            //            facingMode: "environment",
-
-            //        },
-            //        audio: true,
-            //    },
-            //    function (stream) { // succcess callback gives us a media stream
-
-            //        //var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            //        //if (!isMobile) {
-            //        //     var audioTrack = stream.getAudioTracks()[0];
-            //        //     _screenStream.addTrack(audioTrack);
-            //        //}
-
-            //        $('.instructions').hide();
-            //        _mediaStream = stream;
-            //        _finalStream = stream;
-            //        var videoElement = document.querySelector('.video.mine');
-            //        attachMediaStream(videoElement, stream);
-            //        $(".audio.mine").css("display", "none");
-
-
-            //        //blackSilence());//
-
-            //        viewModel.Loading(false);
-            //    },
-            //    function (error) { // error callback
-            //        alertify.alert('<h4>Failed to get hardware access!</h4> Do you have another browser type open and using your cam/mic?<br/><br/>You were not connected to the server, because I didn\'t code to make browsers without media access work well. <br/><br/>Actual Error: ' + JSON.stringify(error));
-            //        viewModel.Loading(false);
-            //    }
-            //);
+          
             $('.instructions').hide();
             _finalStream = _mediaStream;
-            //var videoElement = document.querySelector('.video.mine');
-            //attachMediaStream(videoElement, stream);
+           
             $(".audio.mine").css("display", "none");
             $(".mineholder").css("display", "inline-block");
 
@@ -418,6 +365,7 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                 // Hook up the UI
                 _attachUiHandlers();
                 viewModel.Loading(false);
+                guestIDes = ["null", "null", "null"],
                 setInterval(function () {
                     hub.server.checkUserExist();
                 }, 8000);
@@ -626,8 +574,9 @@ WebRtcDemo.App = (function (viewModel, connectionManager) {
                     
                     console.log(index + "is full");
                     SteamToGo[index] = event.stream;
-
+                    _hub.server.callOtherClientToUpdate(viewModel.MyConnectionId());
                 }
+               
             },
             onTrackAdded: function (connection, event) {
 

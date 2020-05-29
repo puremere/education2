@@ -42,7 +42,7 @@ namespace education2
         {
             if (username != "relay")
             {
-                User UserCheck = Users.SingleOrDefault(x => x.GroupName == groupname && x.Username == "relay" && x.GuestIDes.Contains("zero"));
+                User UserCheck = Users.SingleOrDefault(x => x.GroupName == groupname && x.Username == "relay" && x.GuestIDes == "0");
                 if (UserCheck == null)
                 {
                     SendRelay(groupname);
@@ -69,7 +69,7 @@ namespace education2
                     Username = username,
                     ConnectionId = Context.ConnectionId,
                     GroupName = groupname,
-                    GuestIDes = "zero,zero,zero",
+                    GuestIDes = "0",
                     Type = type
                 });
                 Groups.Add(Context.ConnectionId, groupname);
@@ -128,23 +128,7 @@ namespace education2
             
             string groupname = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId).GroupName;
             var callingUser = Users.SingleOrDefault(u => u.ConnectionId == Context.ConnectionId);
-            List<string> srtlist = callingUser.GuestIDes.Split(',').ToList();
-            int indexof = srtlist.IndexOf("zero");
-            srtlist[indexof] = targetConnectionId;
-            string finalstring = "";
-           foreach(var item in srtlist)
-            {
-                finalstring = finalstring + item + ",";
-            }
-            callingUser.GuestIDes = finalstring.Trim(',');
-            if (!finalstring.Contains("zero"))
-            {
-                User UserList = Users.SingleOrDefault(x => x.GroupName == groupname && x.Username == "relay" && x.GuestIDes.Contains("zero"));
-                if (UserList == null)
-                {
-                    SendRelay(groupname);
-                }
-            }
+         
 
              var targetUser = Users.SingleOrDefault(u => u.ConnectionId == targetConnectionId);
 
@@ -177,7 +161,7 @@ namespace education2
         public void SendRelay(string groupname)
         {
             string html = string.Empty;
-            // string url = @"http://localhost:8081/openChrome?groupname=" + groupname ;
+            //string url = @"http://localhost:8081/openChrome?groupname=" + groupname ;
              string url = @"http://95.217.162.188:8081/openChrome?groupname=" + groupname;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
@@ -279,66 +263,69 @@ namespace education2
 
 
 
+        public void ChangeRelayStat( string stat)
+        {
+            User user = Users.SingleOrDefault(x => x.ConnectionId == Context.ConnectionId);
+            user.GuestIDes = stat;
+            if (stat == "1")
+            {
+                SendRelay(user.GroupName);
+            }
+
+        }
         public void CallForStream(string GeustConnectionID)
         {
             
 
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
-           
-            if (user != null)
+
+            User UserList = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Username == "relay" && x.GuestIDes == "0");
+
+
+
+            if (UserList != null)
             {
-                User UserList = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Username == "relay" && x.GuestIDes.Contains("zero"));
-               
-                
-
-                if (UserList != null)
-                {
-                    Clients.Client(UserList.ConnectionId).callEveryOne(user.ConnectionId,true);
-                }
-                else
-                {
-                    Clients.Client(Context.ConnectionId).noRelay();
-                    //create relay and call client
-                    // callForStream(GeustConnectionID);
-                }
-                //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
-                //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
-
+                Clients.Client(UserList.ConnectionId).callEveryOne(user.ConnectionId, true);
             }
             else
             {
-               
+                Clients.Client(Context.ConnectionId).noRelay();
+                //create relay and call client
+                // callForStream(GeustConnectionID);
             }
+            //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
+            //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
         }
-        public void CallOtherClientToUpdate()
+        public void CallOtherClientToUpdate(string partnerClientId)
         {
             User user = Users.SingleOrDefault(c => c.ConnectionId == Context.ConnectionId);
             if (user != null)
             {
-                List<User> relayList = Users.Where(x => x.GroupName == user.GroupName && x.Username == "relay" ).ToList();
-                
-                foreach ( User relay in relayList)
+                User relay = Users.SingleOrDefault(x => x.ConnectionId == partnerClientId);
+                List<User> userList = Users.Where(x => x.GroupName == user.GroupName && x.Username != "relay").ToList();
+                foreach (var client in userList)
                 {
-                    List<User> userList = Users.Where(x => x.GroupName == user.GroupName && x.Username != "relay").ToList();
-                    foreach(var client in userList)
-                    {
-                        if (relay.GuestIDes.Contains(client.ConnectionId))
-                        {
-                            //inform user to change ints client video
-                            Clients.Client(client.ConnectionId).changeYourClientVideo(relay.GuestIDes,relay.ConnectionId);
-                            //go to relay and change video 
-                            Clients.Client(relay.ConnectionId).changeYourStreamFor(client.ConnectionId);
-                        }
-                        else
-                        {
-                            Clients.Client(client.ConnectionId).incomingCall(relay, false);
-                        }
-                    }
+                    Clients.Client(relay.ConnectionId).doWhatYoutThinkIsRight(client.ConnectionId);
+
+                    //if (relay.GuestIDes.Contains(client.ConnectionId))
+                    //{
+                    //    //inform user to change ints client video
+                    //    Clients.Client(client.ConnectionId).changeYourClientVideo(relay.GuestIDes,relay.ConnectionId);
+                    //    //go to relay and change video 
+                    //    Clients.Client(relay.ConnectionId).changeYourStreamFor(client.ConnectionId);
+                    //}
+                    //else
+                    //{
+                    //}
                 }
-                //User Admin = Users.SingleOrDefault(x => x.GroupName == user.GroupName && x.Type == "admin");
-                //Clients.Client(Admin.ConnectionId).callEveryOne(user.ConnectionId);
+
 
             }
+        }
+        public void CallUserTochangeVideo(string connectionID,string GuestIDes, string relayID)
+        {
+             Clients.Client(connectionID).changeYourClientVideo(GuestIDes, relayID);
+
         }
         public void resPonseToCallEveryOne(string requestee, bool type)
         {
@@ -390,20 +377,7 @@ namespace education2
                         {
                                user.GuestIDes = user.GuestIDes.Replace(callingUser.ConnectionId, "zero");
                                Clients.Client(user.ConnectionId).callEnded(callingUser.ConnectionId, string.Format("{0} تماس را قطع کرد.", callingUser.Username));
-
-                            List<string> clientlist = callingUser.GuestIDes.Split(',').ToList();
-                            foreach(var client in clientlist)
-                            {
-                                if (client != "zero" )
-                                {
-                                    //inform user to change ints client video
-                                    Clients.Client(client).changeYourClientVideo(user.GuestIDes, user.ConnectionId);
-                                    //go to relay and change video 
-                                    Clients.Client(user.ConnectionId).changeYourStreamFor(client);
-                                }
-                            }
-
-                           
+                            
                         }
                     }
                    
